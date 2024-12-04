@@ -104,6 +104,27 @@ public class Node implements Runnable{
 			}
 	    }
 		
+		//The account and port data is read from the repository
+		try {
+		ArrayList<String> command = new ArrayList<String>();
+		command.add(System.getProperty("user.dir")+File.separator+"Import.bat");
+		ProcessBuilder pb = new ProcessBuilder(command);
+		pb.directory(new File("I:\\git\\Network"));
+		Process p = pb.start();
+		System.out.println("4. IMPORT");
+		//Reads data
+		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
+		StringBuilder sb = new StringBuilder();
+		String line = br.readLine();
+
+		while (line != null) {
+		sb.append(line);
+		sb.append(System.lineSeparator());
+		line = br.readLine();	
+		}
+		String everything = sb.toString();
+		} catch (Exception e) {e.printStackTrace();}
+		
 		Updater u = new Updater();
 		Receiver r = new Receiver();
 		Client c = new Client();
