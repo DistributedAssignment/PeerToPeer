@@ -380,8 +380,8 @@ public class Node implements Runnable{
  	        }
  	        myWriter.write("\n");
  	        for (int j = 0; j<2048; j++) {
- 	        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
- 	        	} else {myWriter.write(ip_list[j]+" ");}
+ 	        	if (ip_list[j].equals(null)) {myWriter.write("NULL ");  	
+ 	        	} else {myWriter.write(ip_list[j]+" "); }
  	        }
  	        myWriter.close();
  			} catch (Exception e) {e.printStackTrace();}
@@ -393,6 +393,7 @@ public class Node implements Runnable{
  			ProcessBuilder pb = new ProcessBuilder(command);
  			pb.directory(new File("I:\\git\\PeerToPeer"));
  			Process p = pb.start();
+ 			System.out.println("Commited");
  			} catch (Exception e) {e.printStackTrace();}
  			/***THE NETWORK NOW EXISTS***/
  			}
