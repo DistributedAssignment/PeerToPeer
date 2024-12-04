@@ -114,11 +114,7 @@ public class Node implements Runnable{
 		String everything = null;
 		int com = -1;
 		try {
-		ArrayList<String> command = new ArrayList<String>();
-		command.add(System.getProperty("user.dir")+File.separator+"Import.bat");
-		ProcessBuilder pb = new ProcessBuilder(command);
-		pb.directory(new File("I:\\git\\PeerToPeer"));
-		Process p = pb.start();
+		Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\import.bat");
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
 		StringBuilder sb = new StringBuilder();
@@ -275,11 +271,7 @@ public class Node implements Runnable{
 					
 					//Commits this to the git repository
 					try {
-					ArrayList<String> command = new ArrayList<String>();
-					command.add(System.getProperty("user.dir")+File.separator+"Commit.bat");
-					ProcessBuilder pb = new ProcessBuilder(command);
-					pb.directory(new File("I:\\git\\PeerToPeer"));
-					Process p = pb.start();
+					Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
 					} catch (Exception e) {e.printStackTrace();}
 					
 				} 
