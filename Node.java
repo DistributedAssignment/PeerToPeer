@@ -17,6 +17,7 @@ import java.io.FileWriter;
 import java.io.BufferedReader;
 import java.lang.ProcessBuilder;
 import java.io.FileReader;
+import java.util.Random;
 
 public class Node implements Runnable{	
 	//The data
@@ -28,6 +29,7 @@ public class Node implements Runnable{
 	//The scoket and packet for sending and receiving
 	static DatagramSocket socket_s;
 	static DatagramSocket socket_r;
+	static DatagramSocket socket_m;
 	//For sending data too other nodes
 	static byte[] data;
 	//For sending data too other nodes
@@ -73,6 +75,11 @@ public class Node implements Runnable{
  	}
  	
  	public void run() {
+	    Random ran = new Random();
+ 		int name = ran.nextInt(100);
+ 		System.out.println(name);
+ 		System.err.println("Name "+name);
+ 		System.err.println("Start");
  		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
 		for (int i = 0; i<account_list.length; i++) {
@@ -81,7 +88,7 @@ public class Node implements Runnable{
 			//So that no one ends up with a weird starting balance
 			account_list[i] = 0;
 		}
-
+		
 	    //Sets up the nodes socket
 	    try {
 		    psB = new PrintStream("Node Data.log");
@@ -92,7 +99,7 @@ public class Node implements Runnable{
 		while (setup == false) {
 	    	try {
 	    		setup = true;
-	    		socket_s = new DatagramSocket(port);
+	    		socket_s = new DatagramSocket(port,ip);
 			} catch (SocketException e) {
 				setup = false;
 				port +=1;
@@ -103,18 +110,32 @@ public class Node implements Runnable{
 		while (setup == false) {
 	    	try {
 	    		setup = true;
-	    		socket_r = new DatagramSocket(port);
+	    		socket_r = new DatagramSocket(port,ip);
 			} catch (SocketException e) {
 				setup = false;
 				port +=1;
 			}
 	    }
 		
+	    setup= false;
+		while (setup == false) {
+	    	try {
+	    		setup = true;
+	    		socket_m = new DatagramSocket(port,ip);
+			} catch (SocketException e) {
+				setup = false;
+				port +=1;
+			}
+	    }
+		
+		System.err.println("Initalize");
+		
 		//The account and port data is read from the repository
 		String everything = null;
 		int com = -1;
 		try {
 		Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\import.bat");
+		System.err.println("Import");
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
 		StringBuilder sb = new StringBuilder();
@@ -152,7 +173,7 @@ public class Node implements Runnable{
 			}
 			}
 		}
-		
+		System.err.println("Processed data");
 		Updater u = new Updater();
 		Receiver r = new Receiver();
 		Client c = new Client(com);
@@ -167,7 +188,6 @@ public class Node implements Runnable{
 		u.join();
 		r.join();
 		m.join();} catch (Exception e) {}
-		System.out.println("Hello");
 	}
  	
  	
@@ -221,18 +241,20 @@ public class Node implements Runnable{
 		
 		public Messenger() {
 			
-		}
+			}
 		
 		public void run() {
 			while (true) {
 			try {
-
 				//Gets the message and acts accordingly
 				String[] message = messages.remove();
+				System.err.println("M: Message received");
 				if (message[0].trim().equals("Update")) {
+					System.err.println("M: "+message[0].trim());
 		 	 		account_list[Integer.parseInt(message[2])] = Integer.parseInt(message[1]);
 		 	 		account_index[Integer.parseInt(message[2])] = Integer.parseInt(message[2]);
-				} else if (message[0].trim().equals("New Node ")) {
+				} else if (message[0].trim().equals("New Node")) {
+					System.err.println("M: "+message[0].trim());
 					//Updates its node list
 		 			for (int i = 0; i<ip_list.length; i++) {
 		 				if (ip_list[i]==null) {
@@ -245,11 +267,12 @@ public class Node implements Runnable{
 					
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if (message[0].trim().equals("New Node First")) {
+						System.err.println("M: "+message[0].trim());
 						data_node = ("New Node "+message[1]+" "+message[2]).getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
-								socket_s.send(packet);
+								socket_m.send(packet);
 								packet = null;
 							}
 						}
@@ -276,6 +299,7 @@ public class Node implements Runnable{
 					
 				} 
 			} catch (Exception e) {}
+			System.err.println("M complete");
 			}
 		}
 	}
@@ -294,7 +318,7 @@ public class Node implements Runnable{
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				
+				System.err.println("R: Received");
 				String[] message;	
 				String temp = new String(receive);
 				message = temp.split(" ");
@@ -314,11 +338,13 @@ public class Node implements Runnable{
  			this.com = c;
  		}
  		
- 		public void run() {		
+ 		public void run() {	
+ 			System.err.println("C: Started");
  			/**HERE THE NODE CONNECTS TO THE NETWORK**/
  			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
  			int com = -1;
  			if (com != -1) {
+ 				System.err.println("C: Joining Network");
  				//Adds it self to the node lists
  				for (int i = 0; i<port_list.length;i++) {
  					if (ip_list[i].trim().equals("NULL")) {
@@ -328,38 +354,48 @@ public class Node implements Runnable{
  					}
  				}	
  					
- 					/*Now it needs to be added to the network it does by contacting the node in com
- 					 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
- 					 * [IF I GOT THIS FAR]
- 					 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
- 					 * and notify all other nodes
- 					 */
- 					byte[] up_data = ("New Node Initial "+port+" "+ip).getBytes();
- 					DatagramPacket packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);
- 					try { socket_s.send(packet);
- 					} catch (Exception e) {e.printStackTrace();}
- 					
- 					packet = null;
- 					
- 					//Now this node should tell all other nodes about this node and will then start to update the other nodes
- 					//It should also send the account list to this node
- 					
- 					//The account data is constructeds
- 					byte[] re_data = new byte[65536];
- 					packet = new DatagramPacket(re_data,re_data.length);
- 					String temp = new String(re_data);
- 					String[] data = temp.split(" ");
- 					String[] a;
- 					for (int i = 0; i<data.length; i++) {
- 						a= data[i].split(",");
- 						int b = Integer.parseInt(a[0].trim());
- 						int in = Integer.parseInt(a[1].trim());
- 						account_list[in] = b;
- 						account_index[in] = in;
- 					}
- 				/***THE NODE IS NOW ON THE NETWORK***/
+			/*Now it needs to be added to the network it does by contacting the node in com
+			 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
+			 * [IF I GOT THIS FAR]
+			 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
+			 * and notify all other nodes
+			 */
+ 			DatagramSocket socket_temp = null;
+ 			DatagramPacket packet = null;
+ 			byte[] up_data = new byte[65536];
+			try { 
+				socket_temp = new DatagramSocket(port,ip);
+				up_data = ("New Node Initial "+port+" "+ip).getBytes();
+				packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
+				socket_temp.send(packet);
+			} catch (Exception e) {e.printStackTrace();}
+			
+			packet = null;
+			byte[] re_data = new byte[65536];
+			packet = new DatagramPacket(re_data, re_data.length);
+			try { socket_temp.receive(packet);
+			} catch (Exception e) {e.printStackTrace();}
+			socket_temp.close();
+			System.err.println("C: Account data received");
+			//Now this node should tell all other nodes about this node and will then start to update the other nodes
+			//It should also send the account list to this node
+			
+			//The account data is constructeds
+			String temp = new String(re_data);
+			String[] data = temp.split(" ");
+			String[] a;
+			for (int i = 0; i<data.length; i++) {
+				a= data[i].split(",");
+				int b = Integer.parseInt(a[0].trim());
+				int in = Integer.parseInt(a[1].trim());
+				account_list[in] = b;
+				account_index[in] = in;
+			}
+			System.err.println("C: Account data constructed");
+			/***THE NODE IS NOW ON THE NETWORK***/
  			}
  			 else {
+ 				System.err.println("C: Creating Network");
  				//Adds itself to the list
  				ip_list[0] = ip_str;
  				IP_list[0]= ip;
@@ -377,16 +413,19 @@ public class Node implements Runnable{
  	        }
  	        myWriter.close();
  			} catch (Exception e) {e.printStackTrace();}
- 			
+ 			System.err.println("C: Data Created");
  			//Commits this to the git repository
  			try {
  			Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
  			} catch (Exception e) {e.printStackTrace();}
+ 			System.err.println("C: Data Commited");
+ 			System.err.println("C: Network Created");
  			/***THE NETWORK NOW EXISTS***/
  			}
  			
  			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
  			while (true) {
+ 				System.err.println("C: Creation finished");
  				String in = "";
  				int number;
  				System.out.println("Please press: ");
