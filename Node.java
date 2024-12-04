@@ -36,6 +36,10 @@ public class Node implements Runnable{
  	static String[] ip_list;
  	static int[] port_list;
  	
+ 	/***DO LATER***/
+ 	//The node which this node is responsible for
+ 	static int[] responsible;
+ 	
  	//Gets updates information
  	static Queue<int[]> updates;
  	
@@ -109,9 +113,8 @@ public class Node implements Runnable{
 		ArrayList<String> command = new ArrayList<String>();
 		command.add(System.getProperty("user.dir")+File.separator+"Import.bat");
 		ProcessBuilder pb = new ProcessBuilder(command);
-		pb.directory(new File("I:\\git\\Network"));
+		pb.directory(new File("I:\\git\\PeerToPeer"));
 		Process p = pb.start();
-		System.out.println("4. IMPORT");
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
 		StringBuilder sb = new StringBuilder();
@@ -125,17 +128,97 @@ public class Node implements Runnable{
 		String everything = sb.toString();
 		} catch (Exception e) {e.printStackTrace();}
 		
+		//Processes the data
+		String[] data = everything.split("\n");
+		String[] node_data = data[0].split(" ");
+		//Gets the port, IP and accout list
+		String[] port_data = data[1].split(" ");
+		String[] IP_data = data[2].split(" ");
+		String[] account_data_1 = data[3].split(" ");
+		String[] account_data_2 = data[3].split(" ");
+		
+		int com = -1;
+		//processes the data in the repository
+		for (int i = 0; i<port_data.length;i++) {
+			if (IP_data[i].trim().equals("NULL")) {
+				com = i;
+				IP_list[i] = null;
+				ip_list[i] = null;
+				port_list = -1;
+			}
+			
+			try {
+				ip_list[i] = IP_data[i];
+				IP_list[i] = InetAddress.getByName(IP_data[i]);
+				port_list[i] = Integer.parseInt(port_data[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			account_list[i] == Integer.parseInt(account_data_1[i]);
+			account_index[i] == Integer.parseInt(account_data_2[i]);
+		}
+		
 		Updater u = new Updater();
 		Receiver r = new Receiver();
 		Client c = new Client();
-		c.setDaemon(true);
+		Messenger m = new Messenger();
+		//c.setDaemon(true);
 		c.start();
 		u.start();
 		r.start();
+		m.start();
 		try{
 		c.join();
 		u.join();
-		r.join();} catch (Exception e) {}
+		r.join();
+		m.join();} catch (Exception e) {}
+		System.out.println("Hello");
+		//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
+		if (c != -1) {
+			//Adds it self to the node lists
+			for (int i = 0; i<port_data.length;i++) {
+				if (ip_list[i].trim().equals("NULL")) {
+					IP_list[i] = ip;
+					ip_list[i] = ip_str;
+					port_list = port;
+				}
+					
+			}
+		} else {
+			//Adds itself to the list
+			ip_list[0] = ip_str;
+			IP_list[0]= ip;
+			port_list[0] = port;
+		
+		//Reconstructs data
+		try {
+        FileWriter myWriter = new FileWriter("Data.txt");
+        for (int j = 0; j<2048; j++) {
+        	myWriter.write(port_list[j]+" ");
+        }
+        myWriter.write("\n");
+        for (int j = 0; j<2048; j++) {
+        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
+        	} else {myWriter.write(ip_list[j]+" ");}
+        }
+        myWriter.write("\n");
+        for (int j = 0; j<2048; j++) {
+        	myWriter.write(account_list[j]+" ");
+        }
+        myWriter.close();
+		} catch (Exception e) {e.printStackTrace();}
+		
+		//Commits this to the git repository
+		try {
+		ArrayList<String> command = new ArrayList<String>();
+		command.add(System.getProperty("user.dir")+File.separator+"Commit.bat");
+		ProcessBuilder pb = new ProcessBuilder(command);
+		pb.directory(new File("I:\\git\\PeerToPeer"));
+		Process p = pb.start();
+		} catch (Exception e) {e.printStackTrace();}
+		
+		}
  	}
  	
  	public static void main(String args[]) {
