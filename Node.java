@@ -133,23 +133,20 @@ public class Node implements Runnable{
 		
 		//Processes the data
 		String[] data = everything.split("\n");
-		String[] node_data = data[0].split(" ");
 		//Gets the port, IP and accout list
-		String[] port_data = data[1].split(" ");
-		String[] IP_data = data[2].split(" ");
-		String[] account_data_1 = data[3].split(" ");
-		String[] account_data_2 = data[4].split(" ");
+		String[] port_data = data[0].split(" ");
+		String[] IP_data = data[1].split(" ");
 		
 		int com = -1;
 		//processes the data in the repository
-		for (int i = 0; i<port_data.length;i++) {
+		for (int i = 0; i<port_list.length;i++) {
 			if (IP_data[i].trim().equals("NULL")) {
 				com = i;
 				IP_list[i] = null;
 				ip_list[i] = null;
 				port_list[i] = -1;
 			}
-			
+			else {
 			try {
 				ip_list[i] = IP_data[i];
 				IP_list[i] = InetAddress.getByName(IP_data[i]);
@@ -157,9 +154,7 @@ public class Node implements Runnable{
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			account_list[i] = Integer.parseInt(account_data_1[i]);
-			account_index[i] = Integer.parseInt(account_data_2[i]);
+			}
 		}
 		
 		Updater u = new Updater();
@@ -177,66 +172,7 @@ public class Node implements Runnable{
 		r.join();
 		m.join();} catch (Exception e) {}
 		System.out.println("Hello");
-		//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
-		if (com != -1) {
-			//Adds it self to the node lists
-			for (int i = 0; i<port_data.length;i++) {
-				if (ip_list[i].trim().equals("NULL")) {
-					IP_list[i] = ip;
-					ip_list[i] = ip_str;
-					port_list[i] = port;
-				}
-			}	
-				
-				/*Now it needs to be added to the network it does by contacting the node in com
-				 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
-				 * [IF I GOT THIS FAR]
-				 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
-				 * and notify all other nodes
-				 */
-				byte[] up_data = ("New Node Initial "+port+" "+ip).getBytes();
-				DatagramPacket packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);
-				try { socket_s.send(packet);
-				} catch (Exception e) {e.printStackTrace();}
-				
-				packet = null;
-				
-				//Now this node should tell all other nodes about this node and will then start updating it
-		}
-		 else {
-			//Adds itself to the list
-			ip_list[0] = ip_str;
-			IP_list[0]= ip;
-			port_list[0] = port;
-		}
-		//Reconstructs data
-		try {
-        FileWriter myWriter = new FileWriter("Data.txt");
-        for (int j = 0; j<2048; j++) {
-        	myWriter.write(port_list[j]+" ");
-        }
-        myWriter.write("\n");
-        for (int j = 0; j<2048; j++) {
-        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
-        	} else {myWriter.write(ip_list[j]+" ");}
-        }
-        myWriter.write("\n");
-        for (int j = 0; j<2048; j++) {
-        	myWriter.write(account_list[j]+" ");
-        }
-        myWriter.close();
-		} catch (Exception e) {e.printStackTrace();}
-		
-		//Commits this to the git repository
-		try {
-		ArrayList<String> command = new ArrayList<String>();
-		command.add(System.getProperty("user.dir")+File.separator+"Commit.bat");
-		ProcessBuilder pb = new ProcessBuilder(command);
-		pb.directory(new File("I:\\git\\PeerToPeer"));
-		Process p = pb.start();
-		} catch (Exception e) {e.printStackTrace();}
-		
-		}
+	}
  	
  	
  	public static void main(String args[]) {
@@ -389,7 +325,68 @@ public class Node implements Runnable{
  		}
  		
  		public void run() {		
- 			//ADD CONNECTION STUFF HERE
+ 			/**HERE THE NODE CONNECTS TO THE NETWORK**/
+ 			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
+ 			if (com != -1) {
+ 				//Adds it self to the node lists
+ 				for (int i = 0; i<port_data.length;i++) {
+ 					if (ip_list[i].trim().equals("NULL")) {
+ 						IP_list[i] = ip;
+ 						ip_list[i] = ip_str;
+ 						port_list[i] = port;
+ 					}
+ 				}	
+ 					
+ 					/*Now it needs to be added to the network it does by contacting the node in com
+ 					 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
+ 					 * [IF I GOT THIS FAR]
+ 					 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
+ 					 * and notify all other nodes
+ 					 */
+ 					byte[] up_data = ("New Node Initial "+port+" "+ip).getBytes();
+ 					DatagramPacket packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);
+ 					try { socket_s.send(packet);
+ 					} catch (Exception e) {e.printStackTrace();}
+ 					
+ 					packet = null;
+ 					
+ 					//Now this node should tell all other nodes about this node and will then start updating it
+ 			}
+ 			 else {
+ 				//Adds itself to the list
+ 				ip_list[0] = ip_str;
+ 				IP_list[0]= ip;
+ 				port_list[0] = port;
+ 			
+ 			//Reconstructs data
+ 			try {
+ 	        FileWriter myWriter = new FileWriter("Data.txt");
+ 	        for (int j = 0; j<2048; j++) {
+ 	        	myWriter.write(port_list[j]+" ");
+ 	        }
+ 	        myWriter.write("\n");
+ 	        for (int j = 0; j<2048; j++) {
+ 	        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
+ 	        	} else {myWriter.write(ip_list[j]+" ");}
+ 	        }
+ 	        myWriter.write("\n");
+ 	        for (int j = 0; j<2048; j++) {
+ 	        	myWriter.write(account_list[j]+" ");
+ 	        }
+ 	        myWriter.close();
+ 			} catch (Exception e) {e.printStackTrace();}
+ 			
+ 			//Commits this to the git repository
+ 			try {
+ 			ArrayList<String> command = new ArrayList<String>();
+ 			command.add(System.getProperty("user.dir")+File.separator+"Commit.bat");
+ 			ProcessBuilder pb = new ProcessBuilder(command);
+ 			pb.directory(new File("I:\\git\\PeerToPeer"));
+ 			Process p = pb.start();
+ 			} catch (Exception e) {e.printStackTrace();}
+ 			}
+ 			
+ 			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
  			while (true) {
  				String in = "";
  				int number;
