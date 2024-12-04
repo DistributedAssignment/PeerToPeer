@@ -112,6 +112,7 @@ public class Node implements Runnable{
 		
 		//The account and port data is read from the repository
 		String everything = null;
+		int com = -1;
 		try {
 		ArrayList<String> command = new ArrayList<String>();
 		command.add(System.getProperty("user.dir")+File.separator+"Import.bat");
@@ -137,7 +138,6 @@ public class Node implements Runnable{
 		String[] port_data = data[0].split(" ");
 		String[] IP_data = data[1].split(" ");
 		
-		int com = -1;
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
 			if (IP_data[i].trim().equals("NULL")) {
@@ -159,7 +159,7 @@ public class Node implements Runnable{
 		
 		Updater u = new Updater();
 		Receiver r = new Receiver();
-		Client c = new Client();
+		Client c = new Client(com);
 		Messenger m = new Messenger();
 		//c.setDaemon(true);
 		c.start();
@@ -270,10 +270,6 @@ public class Node implements Runnable{
 			        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
 			        	} else {myWriter.write(ip_list[j]+" ");}
 			        }
-			        myWriter.write("\n");
-			        for (int j = 0; j<2048; j++) {
-			        	myWriter.write(account_list[j]+" ");
-			        }
 			        myWriter.close();
 					} catch (Exception e) {e.printStackTrace();}
 					
@@ -321,15 +317,18 @@ public class Node implements Runnable{
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
  		private static Scanner myObj = new Scanner(System.in);
- 		public Client() {
+ 		int com;
+ 		public Client(int c) {
+ 			this.com = c;
  		}
  		
  		public void run() {		
  			/**HERE THE NODE CONNECTS TO THE NETWORK**/
  			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
+ 			int com = -1;
  			if (com != -1) {
  				//Adds it self to the node lists
- 				for (int i = 0; i<port_data.length;i++) {
+ 				for (int i = 0; i<port_list.length;i++) {
  					if (ip_list[i].trim().equals("NULL")) {
  						IP_list[i] = ip;
  						ip_list[i] = ip_str;
@@ -350,7 +349,23 @@ public class Node implements Runnable{
  					
  					packet = null;
  					
- 					//Now this node should tell all other nodes about this node and will then start updating it
+ 					//Now this node should tell all other nodes about this node and will then start to update the other nodes
+ 					//It should also send the account list to this node
+ 					
+ 					//The account data is constructeds
+ 					byte[] re_data = new byte[65536];
+ 					packet = new DatagramPacket(re_data,re_data.length);
+ 					String temp = new String(re_data);
+ 					String[] data = temp.split(" ");
+ 					String[] a;
+ 					for (int i = 0; i<data.length; i++) {
+ 						a= data[i].split(",");
+ 						int b = Integer.parseInt(a[0].trim());
+ 						int in = Integer.parseInt(a[1].trim());
+ 						account_list[in] = b;
+ 						account_index[in] = in;
+ 					}
+ 				/***THE NODE IS NOW ON THE NETWORK***/
  			}
  			 else {
  				//Adds itself to the list
@@ -358,7 +373,6 @@ public class Node implements Runnable{
  				IP_list[0]= ip;
  				port_list[0] = port;
  			
- 			//Reconstructs data
  			try {
  	        FileWriter myWriter = new FileWriter("Data.txt");
  	        for (int j = 0; j<2048; j++) {
@@ -368,10 +382,6 @@ public class Node implements Runnable{
  	        for (int j = 0; j<2048; j++) {
  	        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
  	        	} else {myWriter.write(ip_list[j]+" ");}
- 	        }
- 	        myWriter.write("\n");
- 	        for (int j = 0; j<2048; j++) {
- 	        	myWriter.write(account_list[j]+" ");
  	        }
  	        myWriter.close();
  			} catch (Exception e) {e.printStackTrace();}
@@ -384,6 +394,7 @@ public class Node implements Runnable{
  			pb.directory(new File("I:\\git\\PeerToPeer"));
  			Process p = pb.start();
  			} catch (Exception e) {e.printStackTrace();}
+ 			/***THE NETWORK NOW EXISTS***/
  			}
  			
  			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
