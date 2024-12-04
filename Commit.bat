@@ -5,3 +5,4 @@ git remote add origin https://github.com/DistributedAssignment/PeerToPeer.git
 git branch -M main
 git fetch -u origin main
 git push -u origin main
+pause
