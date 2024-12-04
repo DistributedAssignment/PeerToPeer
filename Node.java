@@ -388,12 +388,8 @@ public class Node implements Runnable{
  			
  			//Commits this to the git repository
  			try {
- 			ArrayList<String> command = new ArrayList<String>();
- 			command.add(System.getProperty("user.dir")+File.separator+"Commit.bat");
- 			ProcessBuilder pb = new ProcessBuilder(command);
- 			pb.directory(new File("I:\\git\\PeerToPeer"));
- 			Process p = pb.start();
- 			} catch (Exception e) { 			System.out.println("Commited"); e.printStackTrace();}
+ 			Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
+ 			} catch (Exception e) {e.printStackTrace();}
  			/***THE NETWORK NOW EXISTS***/
  			}
  			
