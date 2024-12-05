@@ -348,7 +348,7 @@ public class Node {
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if (message[0].trim().equals("New:Node:Initial")) {
 						System.err.println("M: "+message[0].trim());
-						String temp = "New:Node "+message[1]+" "+message[2]
+						String temp = "New:Node "+message[1]+" "+message[2];
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
