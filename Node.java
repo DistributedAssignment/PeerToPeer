@@ -374,8 +374,8 @@ public class Node {
 			 				}
 			 			}
 			 			
-					String account_dat;
-				   for (int j = 0; j<2048; j++) {
+					String account_dat = "";
+				   for (int i = 0; i<2048; i++) {
 				        if (account_index[i] != -1) {
 				        	account_dat = account_dat + account_list[i] +","+account_index[i] + " ";
 				        }
