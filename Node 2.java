@@ -21,30 +21,18 @@ import java.util.Random;
 import java.util.concurrent.*;
 
 public class Node {	
-	//The data
-	static int[] account_list = new int[2048] ;
-	//To make it easier to send data to new nodes
-	static int[] account_index = new int[2048];
-	
-	//The scoket and packet for sending and receiving
-	static DatagramSocket socket_s = null;
-	static DatagramSocket socket_r = null;
-	static DatagramSocket socket_m = null;
-	
- 	//The list of nodes on the network
- 	static InetAddress[] IP_list = new InetAddress[2048];
- 	static String[] ip_list = new String[2048];
- 	static int[] port_list = new int[2048];
- 	
- 	//The information about the node
- 	static int port = 1;
- 	static String ip_str = getLocalAddress();
- 	static InetAddress ip;
- 	
 	//This is the index of a changed account
 	static int change_index = -1;
+	//For sending data too other nodes
+	static byte[] data = new byte[65536];
+	//For sending data too other nodes
+	static byte[] data_node = new byte[65536];
 	//For out putting information about what the node is doing in the background
  	static PrintStream psB;
+
+ 	
+ 	//Gets updates information
+ 	static BlockingQueue<int[]> updates = new LinkedBlockingQueue<int[]>(2048);
  	
  	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
@@ -52,14 +40,20 @@ public class Node {
  	}
  	
  	public void create() {
+		Updater u = new Updater();
 		Receiver r = new Receiver();
 		Client c = new Client();
+		Messenger m = new Messenger();
 		//c.setDaemon(true);
 		c.start();
+		u.start();
 		r.start();
+		m.start();
 		try{
 		c.join();
-		r.join();} catch (Exception e) {}
+		u.join();
+		r.join();
+		m.join();} catch (Exception e) {}
  	}
  	
  	public static void main(String args[]) {
@@ -294,16 +288,26 @@ public class Node {
 }
 			
 	private class Updater extends Thread{
-		int[] update;
-		public Updater(int[] u) {
-			this.update = new int [2];
-			update[0] = u[0];
-			update[1] = u[1];
+		
+		public Updater() {
+			
 		}
 		
 		public void run() {
-			byte[] data = new byte[65536];
+			while (true) {
 			try {
+				
+				int[] update = null;
+				boolean wait = false;
+				System.err.println("U: Waiting");
+				while (!wait) {
+				 wait = upcl.tryAcquire();
+				}
+
+				upcl.tryAcquire();				
+				update= updates.remove();
+				
+			
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -316,23 +320,24 @@ public class Node {
 				}
 				System.err.println("U: Updated");
 			} catch (Exception e) {e.printStackTrace();}
+			}
 		}
 	}
 	
 	private class Messenger extends Thread{
-		String[] message;
-		public Messenger(String[] ms) {
-			this.message = new String[ms.length];
-			for (int i = 0; i<ms.length; i++) {
-				message[i] = ms[i];
+		
+		public Messenger() {
+			
 			}
-		}
 		
 		public void run() {
-			//For sending data too other nodes
-			byte[] data_node = new byte[65536];
+			while (true) {
 			try {
 				//Gets the message and acts accordingly
+				String[] message = null;
+				boolean wait = false;
+				socker_m.receive
+				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
@@ -388,6 +393,8 @@ public class Node {
 				} 
 				System.err.println("M complete");
 			} catch (Exception e) {e.printStackTrace();}
+
+			}
 		}
 	}
 	
@@ -398,9 +405,8 @@ public class Node {
 		}
 		
 		public void run() {
-			byte[] receive = new byte[65536];
 			while (true) { 
-				receive = new byte[65536];
+				receive = new receive[65536];
 				DatagramPacket packet = new DatagramPacket(receive, receive.length);
 				try {
 					socket_r.receive(packet);
@@ -413,7 +419,8 @@ public class Node {
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				(new Messenger(message)).start();
+				messages.add(message);
+				mesrec.release();
 				System.err.println("R: Sent to messenger");
 			}
 		}
@@ -490,7 +497,8 @@ public class Node {
  		    		int[] u = new int[2];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
  		    		synchronized(account_index) { u[1] = account_index[change_index];}
- 		    		(new Updater(u)).start();
+ 		    		updates.add(u);
+ 		    		upcl.release();
  		    		change_index = -1;
  		    	}
  				}
@@ -549,7 +557,8 @@ public class Node {
 	    		int[] u = new int[2];
 	    		synchronized(account_list) {u[0] = account_list[change_index];}
 	    		synchronized(account_index) {u[1] = account_index[change_index];}
-	    		(new Updater(u)).start();
+	    		updates.add(u);
+	    		upcl.release();
  	    		change_index = -1;
  	    	}
  	    	
