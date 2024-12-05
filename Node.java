@@ -348,7 +348,8 @@ public class Node {
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if (message[0].trim().equals("New:Node:Initial")) {
 						System.err.println("M: "+message[0].trim());
-						data_node = ("New:Node "+message[1]+" "+message[2]).getBytes();
+						String temp = "New:Node "+message[1]+" "+message[2]
+						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
