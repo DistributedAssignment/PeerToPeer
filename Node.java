@@ -345,7 +345,7 @@ public class Node implements Runnable{
 					}
 				}
 				System.err.println("U: Updated");
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 			}
 		}
 	}
@@ -416,7 +416,7 @@ public class Node implements Runnable{
 					
 				} 
 				System.err.println("M complete");
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 
 			}
 		}
