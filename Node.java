@@ -170,6 +170,92 @@ public class Node implements Runnable{
 			}
 		}
 		System.err.println("Processed data");
+		
+			/**HERE THE NODE CONNECTS TO THE NETWORK**/
+			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
+			int com = -1;
+			if (com != -1) {
+				System.err.println("Joining Network");
+				//Adds it self to the node lists
+				
+				for (int i = 0; i<port_list.length;i++) {
+					if (ip_list[i].trim().equals("NULL")) {
+						IP_list[i] = ip;
+						ip_list[i] = ip_str;
+						port_list[i] = port;
+						break;
+						
+					}
+				}	
+					
+		/*Now it needs to be added to the network it does by contacting the node in com
+		 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
+		 * [IF I GOT THIS FAR]
+		 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
+		 * and notify all other nodes
+		 */
+			DatagramSocket socket_temp = null;
+			DatagramPacket packet = null;
+			byte[] up_data = new byte[65536];
+		try { 
+			socket_temp = new DatagramSocket(port,ip);
+			up_data = ("New Node Initial "+port+" "+ip).getBytes();
+			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
+			socket_temp.send(packet);
+		} catch (Exception e) {e.printStackTrace();}
+		
+		packet = null;
+		byte[] re_data = new byte[65536];
+		packet = new DatagramPacket(re_data, re_data.length);
+		try { socket_temp.receive(packet);
+		} catch (Exception e) {e.printStackTrace();}
+		socket_temp.close();
+		System.err.println("Account data received");
+		//Now this node should tell all other nodes about this node and will then start to update the other nodes
+		//It should also send the account list to this node
+		
+		//The account data is constructeds
+		String temp = new String(re_data);
+		String[] data = temp.split(" ");
+		String[] a;
+		for (int i = 0; i<data.length; i++) {
+			a= data[i].split(",");
+			int b = Integer.parseInt(a[0].trim());
+			int in = Integer.parseInt(a[1].trim());
+			account_list[in] = b;
+			account_index[in] = in;
+		}
+		System.err.println("Account data constructed");
+		/***THE NODE IS NOW ON THE NETWORK***/
+			}
+			 else {
+				System.err.println("Creating Network");
+				//Adds itself to the list
+				ip_list[0] = ip_str;
+				IP_list[0]= ip;
+				port_list[0] = port;
+			
+			try {
+	        FileWriter myWriter = new FileWriter("Data.txt");
+	        for (int j = 0; j<2048; j++) {
+	        	myWriter.write(port_list[j]+" ");
+	        }
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	if (ip_list[j]==null) {myWriter.write("NULL ");  	
+	        	} else {myWriter.write(ip_list[j]+" "); }
+	        }
+	        myWriter.close();
+			} catch (Exception e) {e.printStackTrace();}
+			System.err.println("Data Created");
+			//Commits this to the git repository
+			try {
+			Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
+			} catch (Exception e) {e.printStackTrace();}
+			System.err.println("Data Commited");
+			System.err.println("Network Created");
+			/***THE NETWORK NOW EXISTS***/
+			}
 		Updater u = new Updater();
 		Receiver r = new Receiver();
 		Client c = new Client(com);
@@ -343,91 +429,6 @@ public class Node implements Runnable{
  		
  		public void run() {	
  			System.err.println("C: Started");
- 			/**HERE THE NODE CONNECTS TO THE NETWORK**/
- 			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
- 			int com = -1;
- 			if (com != -1) {
- 				System.err.println("C: Joining Network");
- 				//Adds it self to the node lists
- 				
- 				for (int i = 0; i<port_list.length;i++) {
- 					if (ip_list[i].trim().equals("NULL")) {
- 						IP_list[i] = ip;
- 						ip_list[i] = ip_str;
- 						port_list[i] = port;
- 						break;
- 						
- 					}
- 				}	
- 					
-			/*Now it needs to be added to the network it does by contacting the node in com
-			 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
-			 * [IF I GOT THIS FAR]
-			 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
-			 * and notify all other nodes
-			 */
- 			DatagramSocket socket_temp = null;
- 			DatagramPacket packet = null;
- 			byte[] up_data = new byte[65536];
-			try { 
-				socket_temp = new DatagramSocket(port,ip);
-				up_data = ("New Node Initial "+port+" "+ip).getBytes();
-				packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
-				socket_temp.send(packet);
-			} catch (Exception e) {e.printStackTrace();}
-			
-			packet = null;
-			byte[] re_data = new byte[65536];
-			packet = new DatagramPacket(re_data, re_data.length);
-			try { socket_temp.receive(packet);
-			} catch (Exception e) {e.printStackTrace();}
-			socket_temp.close();
-			System.err.println("C: Account data received");
-			//Now this node should tell all other nodes about this node and will then start to update the other nodes
-			//It should also send the account list to this node
-			
-			//The account data is constructeds
-			String temp = new String(re_data);
-			String[] data = temp.split(" ");
-			String[] a;
-			for (int i = 0; i<data.length; i++) {
-				a= data[i].split(",");
-				int b = Integer.parseInt(a[0].trim());
-				int in = Integer.parseInt(a[1].trim());
-				account_list[in] = b;
-				account_index[in] = in;
-			}
-			System.err.println("C: Account data constructed");
-			/***THE NODE IS NOW ON THE NETWORK***/
- 			}
- 			 else {
- 				System.err.println("C: Creating Network");
- 				//Adds itself to the list
- 				ip_list[0] = ip_str;
- 				IP_list[0]= ip;
- 				port_list[0] = port;
- 			
- 			try {
- 	        FileWriter myWriter = new FileWriter("Data.txt");
- 	        for (int j = 0; j<2048; j++) {
- 	        	myWriter.write(port_list[j]+" ");
- 	        }
- 	        myWriter.write("\n");
- 	        for (int j = 0; j<2048; j++) {
- 	        	if (ip_list[j]==null) {myWriter.write("NULL ");  	
- 	        	} else {myWriter.write(ip_list[j]+" "); }
- 	        }
- 	        myWriter.close();
- 			} catch (Exception e) {e.printStackTrace();}
- 			System.err.println("C: Data Created");
- 			//Commits this to the git repository
- 			try {
- 			Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
- 			} catch (Exception e) {e.printStackTrace();}
- 			System.err.println("C: Data Commited");
- 			System.err.println("C: Network Created");
- 			/***THE NETWORK NOW EXISTS***/
- 			}
  			
  			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
  			while (true) {
