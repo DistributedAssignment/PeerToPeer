@@ -331,7 +331,7 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 
-				sychronized(messages){while (updates.poll()==null){
+				synchronized(updates){while (updates.poll()==null){
 				    Thread.sleep(10);}}
 				
 				int[] update = updates.remove();
@@ -361,7 +361,7 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
-				sychronized(messages){ while (messages.poll()==null){
+				synchronized(messages){ while (messages.poll()==null){
 				    Thread.sleep(100);
 				}
 				}
@@ -445,7 +445,7 @@ public class Node implements Runnable{
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				sychronized(messages){messages.add(message);}
+				synchronized(messages){messages.add(message);}
 				System.err.println("R: Sent to messenger");
 			}
 		}
@@ -522,7 +522,7 @@ public class Node implements Runnable{
  		    		int[] u = new int[2];
  		    		u[0] = account_list[change_index];
  		    		u[1] = account_index[change_index];
- 		    		sychronized(messages){updates.add(u);}
+ 		    		synchronized(updates){updates.add(u);}
  		    		change_index = -1;
  		    	}
  				}
