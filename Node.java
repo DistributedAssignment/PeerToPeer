@@ -319,7 +319,11 @@ public class Node {
 			try {
 				
 				int[] update = null;
-				System.err.println("U: waiting");
+				boolean wait = false;
+				System.err.println("u: waiting");
+				while (wait) {
+				 wait = upcl.tryAcquire();
+				}
 
 				upcl.tryAcquire();				
 				update= updates.remove();
@@ -352,7 +356,11 @@ public class Node {
 			try {
 				//Gets the message and acts accordingly
 				String[] message = null;
-				mesrec.tryAcquire();
+				boolean wait = false;
+				System.err.println("M: waiting");
+				while (wait) {
+				 wait = mesrec.tryAcquire();
+				}
 				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
