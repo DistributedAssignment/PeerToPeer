@@ -18,8 +18,6 @@ import java.io.BufferedReader;
 import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class Node implements Runnable{	
 	//The data
@@ -47,10 +45,10 @@ public class Node implements Runnable{
  	static int[] port_list;
  	
  	//Gets updates information
- 	static BlockingQueue<int[]> updates;
+ 	static Queue<int[]> updates;
  	
  	//Gets messages
- 	static BlockingQueue<String[]> messages;
+ 	static Queue<String[]> messages;
 
  	//The information about the node
  	static int port = 1;
@@ -69,8 +67,8 @@ public class Node implements Runnable{
  	 	this.IP_list = new InetAddress[2048];
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
- 	 	this.updates = new ArrayBlockingQueue<int[]>(2048);
- 	 	this.messages= new ArrayBlockingQueue<String[]>(2048);
+ 	 	this.updates = new LinkedList<int[]>();
+ 	 	this.messages= new LinkedList<String[]>();
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
@@ -332,8 +330,12 @@ public class Node implements Runnable{
 		public void run() {
 			while (true) {
 			try {
+				
 				int[] update;
-				synchronized(updates) { update = updates.take();}
+				synchronized(updates){				
+				try {update= updates.remove()}
+				} catch(Exception e) {} 
+				Thread.sleep(500);}
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -345,7 +347,7 @@ public class Node implements Runnable{
 					}
 				}
 				System.err.println("U: Updated");
-			} catch (Exception e) {e.printStackTrace();}
+			} catch (Exception e) {}
 			}
 		}
 	}
@@ -360,8 +362,14 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
-				String[] message;
-				synchronized(messages) {message = messages.take();}
+				String[] message
+				synchronized(messages){ 
+				try {messsage = messages.remove()}
+					
+				} catch(Exception e) {} 
+				Thread.sleep(500);
+				}
+				}
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
@@ -416,7 +424,7 @@ public class Node implements Runnable{
 					
 				} 
 				System.err.println("M complete");
-			} catch (Exception e) {e.printStackTrace();}
+			} catch (Exception e) {}
 
 			}
 		}
@@ -441,9 +449,7 @@ public class Node implements Runnable{
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				try {
-					synchronized(messages){messages.put(message);}
-				} catch (Exception e) {e.printStackTrace();}
+				synchronized(messages){messages.add(message);}
 				System.err.println("R: Sent to messenger");
 			}
 		}
@@ -520,9 +526,7 @@ public class Node implements Runnable{
  		    		int[] u = new int[2];
  		    		u[0] = account_list[change_index];
  		    		u[1] = account_index[change_index];
- 		    		try {
- 		    		synchronized(updates){updates.put(u);}
- 		    	} catch (Exception e) {e.printStackTrace();}
+ 		    		synchronized(updates){updates.add(u);}
  		    		change_index = -1;
  		    	}
  				}
@@ -581,8 +585,7 @@ public class Node implements Runnable{
 	    		int[] u = new int[2];
 	    		synchronized(account_list) {u[0] = account_list[change_index];}
 	    		synchronized(account_index) {u[1] = account_index[change_index];}
-	    		try { synchronized(updates) {updates.put(u);}
- 	    	} catch (Exception e) {e.printStackTrace();}
+	    		synchronized(updates) {updates.add(u);}
  	    		change_index = -1;
  	    	}
  	    	
@@ -747,7 +750,7 @@ public class Node implements Runnable{
  	 		    	boolean input =false;
  	 		    	while (!input) {
  	 		    		try {
- 	 		    			overdraft_str = inputs.remove();
+ 	 		    			overdraft_str = inputs();
  	 		    			input = true;
  	 		    		} catch (Exception e) {
  	 		    			input= false;
