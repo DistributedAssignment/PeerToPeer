@@ -331,8 +331,12 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 
-				//Gets the update from the updates
+				while (updates.poll()==null){
+					System.err.println("U: Updater is waiting");
+				    Thread.sleep(10);}
+				
 				int[] update = updates.remove();
+				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
 				for (int i =0;i<IP_list.length;i++) {
@@ -342,6 +346,7 @@ public class Node implements Runnable{
 						packet = null;
 					}
 				}
+				System.err.println("U: Updated");
 			} catch (Exception e) {}
 			}
 		}
@@ -357,6 +362,11 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
+				while (messages.poll()==null){
+					System.err.println("M: Message waiting");
+				    Thread.sleep(10);
+				}
+				
 				String[] message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
@@ -438,6 +448,7 @@ public class Node implements Runnable{
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
 				messages.add(message);
+				System.err.println("R: Sent to messenger");
 			}
 		}
 	}
