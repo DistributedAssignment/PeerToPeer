@@ -360,6 +360,7 @@ public class Node {
 				System.err.println("M: waiting");
 				while (wait) {
 				 wait = mesrec.tryAcquire();
+				 System.err.println(wait);
 				}
 				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
