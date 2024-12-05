@@ -49,8 +49,8 @@ public class Node {
  	static BlockingQueue<int[]> updates = new LinkedBlockingQueue<int[]>(2048);
  	//Gets messages
  	static BlockingQueue<String[]> messages = new LinkedBlockingQueue<String[]>(2048);
- 	Semaphore elements = new Semaphore(0);
- 	
+ 	Semaphore mesrec = new Semaphore(0);
+ 	Semaphore upcl = new Semaphore(0);
  	//The information about the node
  	static int port = 1;
  	static String ip_str = getLocalAddress();
@@ -320,15 +320,9 @@ public class Node {
 				
 				int[] update = null;
 				System.err.println("U: waiting");
-				synchronized(updates){
-				while (updates.size() == 0) {
-					wait();
-				}
-								
-				try {update= updates.remove();
-					notifyAll();
-				} catch(Exception e) {} 
-				}
+
+				upcl.tryAcquire();				
+				update= updates.remove();
 				
 			
 				System.err.println("U: Updating");
@@ -358,7 +352,7 @@ public class Node {
 			try {
 				//Gets the message and acts accordingly
 				String[] message = null;
-				elements.tryAcquire();
+				mesrec.tryAcquire();
 				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
@@ -441,7 +435,7 @@ public class Node {
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
 				messages.add(message);
-				elements.release();
+				mesrec.release();
 				System.err.println("R: Sent to messenger");
 			}
 		}
@@ -516,9 +510,10 @@ public class Node {
  		    	if (change_index!=-1) {
  		    		System.out.println("Worked");
  		    		int[] u = new int[2];
- 		    		u[0] = account_list[change_index];
- 		    		u[1] = account_index[change_index];
- 		    		synchronized(updates){updates.add(u);}
+ 		    		synchronized(account_list) { u[0] = account_list[change_index];}
+ 		    		synchronized(account_index) { u[1] = account_index[change_index];}
+ 		    		updates.add(u);
+ 		    		upcl.release();
  		    		change_index = -1;
  		    	}
  				}
@@ -577,7 +572,8 @@ public class Node {
 	    		int[] u = new int[2];
 	    		synchronized(account_list) {u[0] = account_list[change_index];}
 	    		synchronized(account_index) {u[1] = account_index[change_index];}
-	    		synchronized(updates) {updates.add(u);}
+	    		updates.add(u);
+	    		upcl.release();
  	    		change_index = -1;
  	    	}
  	    	
