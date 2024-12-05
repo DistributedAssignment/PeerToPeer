@@ -113,10 +113,10 @@ public class Node {
 				port +=1;
 			}
 	    }
-		
+		name = "Node, network "+ip_str+" port "+port;
+		System.out.println(port);
 	    try {
-	    	name = "Node;network:"+ip_str+";port:"+port;
-	 		pbM = new PrintStream("Data\\Setup data "+name+".txt");
+	 		pbM = new PrintStream("Data\\Setup data "+port+".txt");
 	 		System.setErr(pbM);
 	    } catch (Exception e) {e.printStackTrace();}
 		System.err.println("Initalize");
@@ -246,6 +246,11 @@ public class Node {
 	        	if (ip_list[j]==null) {myWriter.write("null ");  	
 	        	} else {myWriter.write(ip_list[j]+" "); }
 	        }
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	if (name_list[j]==null) {myWriter.write("null ");  	
+	        	} else {myWriter.write(name_list[j]+" "); }
+	        }
 	        myWriter.close();
 			} catch (Exception e) {e.printStackTrace();}
 			System.err.println("Data Created");
@@ -288,7 +293,7 @@ public class Node {
 		public void run() {
 			PrintStream pbU = null;
 		    try {
-		 		pbU = new PrintStream("Data\\Updater data "+name+".txt");
+		 		pbU = new PrintStream("Data\\Updater data "+port+".txt");
 		 		System.setErr(pbU);
 		    } catch (Exception e) {e.printStackTrace();}
 		    
@@ -322,7 +327,7 @@ public class Node {
 		public void run() {
 			PrintStream pbMe = null;
 		    try {
-		 		pbMe = new PrintStream("Data\\Messenger data "+name+".txt");
+		 		pbMe = new PrintStream("Data\\Messenger data "+port+".txt");
 		 		System.setErr(pbMe);
 		    } catch (Exception e) {e.printStackTrace();}
 		    
@@ -331,15 +336,13 @@ public class Node {
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
-				System.err.println("M: "+message[0].trim());
 				if ((message[0].trim()).equals("Update")) {
 					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[1].trim());}
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
 				} else if ((message[0].trim()).equals("New")) {
-					System.err.println("M: "+message[0].trim());
 					//Updates its node list
 		 			for (int i = 0; i<ip_list.length; i++) {
-		 				if (ip_list[i]==null) {
+		 				if (port_list[i]==-1) {
 		 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
 		 					synchronized(ip_list) {ip_list[i] = message[2].trim();	}
 		 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
@@ -370,7 +373,7 @@ public class Node {
 			 					synchronized(ip_list) {ip_list[i] = message[2].trim();}	
 			 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
 			 					} catch (Exception e) {e.printStackTrace();}}
-			 					synchronized(ip_list) {name_list[i] = message[3].trim();	}
+			 					synchronized(name_list) {name_list[i] = message[3].trim();	}
 			 					k = i;
 			 					break;
 			 				}
@@ -399,6 +402,11 @@ public class Node {
 			        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
 			        	} else {myWriter.write(ip_list[j]+" ");}
 			        }
+			        myWriter.write("\n");
+			        for (int j = 0; j<2048; j++) {
+			        	if (name_list.equals(null)) {myWriter.write("NULL ");  	
+			        	} else {myWriter.write(name_list[j]+" ");}
+			        }
 			        myWriter.close();
 					} catch (Exception e) {e.printStackTrace();}
 					
@@ -424,10 +432,10 @@ public class Node {
 		
 		public void run() {
 			PrintStream pbR = null;
-		    try {
-		 		pbR = new PrintStream("Data\\Receiver data "+name+".txt");
+		    /*try {
+		 		pbR = new PrintStream("Data\\Receiver data "+port+".txt");
 		 		System.setErr(pbR);
-		    } catch (Exception e) {e.printStackTrace();}
+		    } catch (Exception e) {e.printStackTrace();}*/
 		    
 			byte[] receive = new byte[65536];
 			while (true) { 
@@ -462,7 +470,7 @@ public class Node {
  		
  		public void run() {	
 		    try {
-		 		PrintStream pbC = new PrintStream("Data\\Client data "+name+".txt");
+		 		PrintStream pbC = new PrintStream("Data\\Client data "+port+".txt");
 		 		System.setErr(pbC);
 		    } catch (Exception e) {e.printStackTrace();}
  			System.err.println("C: Started");
