@@ -75,14 +75,6 @@ public class Node implements Runnable{
  	}
  	
  	public void run() {
-	    Random ran = new Random();
- 		int name = ran.nextInt(100);
- 		
- 		try {psB = new PrintStream("Node Data "+name+".log");
- 		} catch (FileNotFoundException e) {e.printStackTrace();}
- 		
- 		System.out.println(name);
- 		System.err.println("Name "+name);
  		System.err.println("Start");
  		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
@@ -196,10 +188,16 @@ public class Node implements Runnable{
  	
  	public static void main(String args[]) {
 	    try {
-		    psB = new PrintStream("Node Data.log");
-		   System.setErr(psB);
+		    Random ran = new Random();
+	 		int name = ran.nextInt(100);
+	 		psB = new PrintStream("Node Data "+name+".log");
+		    System.setErr(psB);
+	 		System.out.println(name);
+	 		System.err.println("Name "+name);
+
 	    } catch (FileNotFoundException e) {e.printStackTrace();}
- 		Node n = new Node();
+ 		
+	    Node n = new Node();
  		n.run();
  	}
 
