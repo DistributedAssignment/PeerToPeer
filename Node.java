@@ -154,7 +154,6 @@ public class Node implements Runnable{
 		
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
-			System.out.prinln(IP_data[i]);
 			if (IP_data[i].trim().equals("NULL")) {
 				com = i;
 				IP_list[i] = null;
@@ -162,6 +161,7 @@ public class Node implements Runnable{
 				port_list[i] = -1;
 			}
 			else {
+			System.out.println(IP_data[i]);
 			try {
 				ip_list[i] = IP_data[i];
 				IP_list[i] = InetAddress.getByName(IP_data[i]);
