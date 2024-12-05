@@ -19,7 +19,7 @@ import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class Node implements Runnable{	
 	//The data
@@ -69,8 +69,8 @@ public class Node implements Runnable{
  	 	this.IP_list = new InetAddress[2048];
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
- 	 	this.updates = new ArrayBlockingQueue<int[]>(2048);
- 	 	this.messages= new ArrayBlockingQueue<String[]>(2048);
+ 	 	this.updates = new LinkedBlockingDeque<int[]>(2048);
+ 	 	this.messages= new LinkedBlockingDeque<String[]>(2048);
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
@@ -340,7 +340,7 @@ public class Node implements Runnable{
 					wait();
 				}
 								
-				try {update= updates.take();
+				try {update= updates.remove();
 					notifyAll();
 				} catch(Exception e) {} 
 				}
@@ -380,7 +380,7 @@ public class Node implements Runnable{
 					wait();
 				}
 								
-				try {message= messages.take();
+				try {message= messages.remove();
 					notifyAll();
 				} catch(Exception e) {} 
 				}
