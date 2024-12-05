@@ -358,7 +358,7 @@ public class Node {
 				String[] message = null;
 				boolean wait = false;
 				System.err.println("M: waiting");
-				while (wait) {
+				while (!wait) {
 				 wait = mesrec.tryAcquire();
 				 System.err.println(wait);
 				}
