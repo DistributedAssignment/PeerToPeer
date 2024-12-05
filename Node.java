@@ -435,6 +435,7 @@ public class Node implements Runnable{
 				System.err.println("R: Received");
 				String[] message;	
 				String temp = new String(receive);
+				System.err.println("R: "+temp);
 				message = temp.split(" ");
 				messages.add(message);
 			}
