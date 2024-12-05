@@ -105,6 +105,18 @@ public class Node implements Runnable{
 		while (setup == false) {
 	    	try {
 	    		setup = true;
+	    		socket_m = new DatagramSocket(port,ip);
+			} catch (SocketException e) {
+				setup = false;
+				port +=1;
+			}
+	    }
+		
+		
+	    setup= false;
+		while (setup == false) {
+	    	try {
+	    		setup = true;
 	    		socket_r = new DatagramSocket(port,ip);
 			} catch (SocketException e) {
 				setup = false;
@@ -112,16 +124,6 @@ public class Node implements Runnable{
 			}
 	    }
 		
-	    setup= false;
-		while (setup == false) {
-	    	try {
-	    		setup = true;
-	    		socket_m = new DatagramSocket(port,ip);
-			} catch (SocketException e) {
-				setup = false;
-				port +=1;
-			}
-	    }
 		
 		System.err.println("Initalize");
 		
@@ -173,7 +175,6 @@ public class Node implements Runnable{
 		
 			/**HERE THE NODE CONNECTS TO THE NETWORK**/
 			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
-			int com = -1;
 			if (com != -1) {
 				System.err.println("Joining Network");
 				//Adds it self to the node lists
@@ -216,7 +217,7 @@ public class Node implements Runnable{
 		
 		//The account data is constructeds
 		String temp = new String(re_data);
-		String[] data = temp.split(" ");
+		data = temp.split(" ");
 		String[] a;
 		for (int i = 0; i<data.length; i++) {
 			a= data[i].split(",");
@@ -258,7 +259,7 @@ public class Node implements Runnable{
 			}
 		Updater u = new Updater();
 		Receiver r = new Receiver();
-		Client c = new Client(com);
+		Client c = new Client();
 		Messenger m = new Messenger();
 		//c.setDaemon(true);
 		c.start();
@@ -422,9 +423,7 @@ public class Node implements Runnable{
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
  		private static Scanner myObj = new Scanner(System.in);
- 		int com;
- 		public Client(int c) {
- 			this.com = c;
+ 		public Client() {
  		}
  		
  		public void run() {	
