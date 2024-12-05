@@ -18,6 +18,7 @@ import java.io.BufferedReader;
 import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
 
 public class Node implements Runnable{	
 	//The data
@@ -45,10 +46,10 @@ public class Node implements Runnable{
  	static int[] port_list;
  	
  	//Gets updates information
- 	static Queue<int[]> updates;
+ 	static BlockingQueue<int[]> updates;
  	
  	//Gets messages
- 	static Queue<String[]> messages;
+ 	static BlockingQueue<String[]> messages;
 
  	//The information about the node
  	static int port = 1;
@@ -67,8 +68,6 @@ public class Node implements Runnable{
  	 	this.IP_list = new InetAddress[2048];
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
- 	 	this.updates = new LinkedList<int[]>();
- 	 	this.messages= new LinkedList<String>();
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
