@@ -331,8 +331,9 @@ public class Node implements Runnable{
 		
 		public void run() {
 			while (true) {
-			try {	
-				synchronized(updates) { int[] update = updates.take();}
+			try {
+				int[] update;
+				synchronized(updates) { update = updates.take();}
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -359,11 +360,8 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
-				synchronized(messages){ while (messages.poll()==null){
-				    Thread.sleep(100);
-				}
-				}
-				String[] message = messages.take();
+				String[] message;
+				synchronized(messages) {message = messages.take();}
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
@@ -443,7 +441,9 @@ public class Node implements Runnable{
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				synchronized(messages){messages.add(message);}
+				try {
+					synchronized(messages){messages.put(message);}
+				} catch (Exception e) {e.printStackTrace();}
 				System.err.println("R: Sent to messenger");
 			}
 		}
@@ -520,7 +520,9 @@ public class Node implements Runnable{
  		    		int[] u = new int[2];
  		    		u[0] = account_list[change_index];
  		    		u[1] = account_index[change_index];
- 		    		synchronized(updates){updates.add(u);}
+ 		    		try {
+ 		    		synchronized(updates){updates.put(u);}
+ 		    	} catch (Exception e) {e.printStackTrace();}
  		    		change_index = -1;
  		    	}
  				}
@@ -579,7 +581,8 @@ public class Node implements Runnable{
 	    		int[] u = new int[2];
 	    		synchronized(account_list) {u[0] = account_list[change_index];}
 	    		synchronized(account_index) {u[1] = account_index[change_index];}
-	    		synchronized(updates) {updates.add(u);}
+	    		try { synchronized(updates) {updates.put(u);}
+ 	    	} catch (Exception e) {e.printStackTrace();}
  	    		change_index = -1;
  	    	}
  	    	
