@@ -1,7 +1,6 @@
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -23,7 +22,7 @@ import java.util.concurrent.*;
 public class Node {	
 	//The data
 	static int[] account_list = new int[2048] ;
-	//To make it easier to send data to new nodes
+	//To make it easier to send data to New:Nodes
 	static int[] account_index = new int[2048];
 	
 	//The scoket and packet for sending and receiving
@@ -40,12 +39,11 @@ public class Node {
  	static int port = 1;
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
- 	static String name_data = ";"
+ 	static int data = 0;
 	//This is the index of a changed account
 	static int change_index = -1;
 	//For out putting information about what the node is doing in the background
- 	//static PrintStream psB;
- 	
+ 	static int name;
  	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
  		
@@ -67,11 +65,10 @@ public class Node {
  	 	catch (Exception e) {e.printStackTrace();}
 	    try {
 		    Random ran = new Random();
-	 		int name = ran.nextInt(100);
+	 		name = ran.nextInt(100);
 	 		System.out.println(name);
-	 		name_data = "Name "+name;
 
-	    } catch (FileNotFoundException e) {e.printStackTrace();}
+	    } catch (Exception e) {e.printStackTrace();}
  		
 	    System.err.println("Start");
  		//HERE THE NODE IS CREATED
@@ -122,7 +119,7 @@ public class Node {
 			}
 	    }
 		
-		
+		System.out.println(port);
 		System.err.println("Initalize");
 		
 		//The account and port data is read from the repository
@@ -213,7 +210,7 @@ public class Node {
 	    }
 		
 		try { 
-			up_data = ("New Node Initial "+port+" "+ip).getBytes();
+			up_data = ("New:Node:Initial "+port+" "+ip).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_temp.send(packet);
 			packet = null;
@@ -292,7 +289,6 @@ public class Node {
 }
 			
 	private class Updater extends Thread{
-		static PrintStream psB;
 		int[] update;
 		public Updater(int[] u) {
 			this.update = new int [2];
@@ -303,12 +299,6 @@ public class Node {
 		public void run() {
 			byte[] data = new byte[65536];
 			try {
-	 			try {	 		
-	 	 			psB = new PrintStream("Messenger Node Data "+name+".log");
-	 			    System.setErr(psB);
-	 			    } catch (Exception e) {
-	 			    	e.printStackTrace();
-	 			    }
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -326,7 +316,6 @@ public class Node {
 	
 	private class Messenger extends Thread{
 		String[] message;
-		static PrintStream psB;
 		public Messenger(String[] ms) {
 			this.message = new String[ms.length];
 			for (int i = 0; i<ms.length; i++) {
@@ -337,12 +326,6 @@ public class Node {
 		public void run() {
 			//For sending data too other nodes
 			byte[] data_node = new byte[65536];
- 			try {	 		
- 			psB = new PrintStream("Messenger Node Data "+name+".log");
-		    System.setErr(psB);
-		    } catch (Exception e) {
-		    	e.printStackTrace();
-		    }
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
@@ -350,7 +333,7 @@ public class Node {
 					System.err.println("M: "+message[0].trim());
 		 	 		account_list[Integer.parseInt(message[2])] = Integer.parseInt(message[1]);
 		 	 		account_index[Integer.parseInt(message[2])] = Integer.parseInt(message[2]);
-				} else if (message[0].trim().equals("New Node")) {
+				} else if (message[0].trim().equals("New:Node")) {
 					System.err.println("M: "+message[0].trim());
 					//Updates its node list
 		 			for (int i = 0; i<ip_list.length; i++) {
@@ -363,9 +346,9 @@ public class Node {
 		 			}
 					
 					//If this is the node with initial contact, all nodes are updated by it
-				} else if (message[0].trim().equals("New Node First")) {
+				} else if (message[0].trim().equals("New:Node:Initial")) {
 						System.err.println("M: "+message[0].trim());
-						data_node = ("New Node "+message[1]+" "+message[2]).getBytes();
+						data_node = ("New:Node "+message[1]+" "+message[2]).getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
@@ -425,18 +408,11 @@ public class Node {
 	}
 	
 	private class Receiver extends Thread{
-		static PrintStream psB;
 		public Receiver() {
 			
 		}
 		
 		public void run() {
- 			try {	 		
- 			psB = new PrintStream("Receive Node Data "+name+".log");
-		    System.setErr(psB);
-		    } catch (Exception e) {
-		    	e.printStackTrace();
-		    }
 			byte[] receive = new byte[65536];
 			while (true) { 
 				receive = new byte[65536];
@@ -466,17 +442,11 @@ public class Node {
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
  		private static Scanner myObj = new Scanner(System.in);
- 		private static PrintStream psB;
+
  		public Client() {
  		}
  		
  		public void run() {	
- 			try {	 		
- 			psB = new PrintStream("Client Node Data "+name+".log");
-		    System.setErr(psB);
-		    } catch (Exception e) {
-		    	e.printStackTrace();
-		    }
  			
  			System.err.println("C: Started");
  			
