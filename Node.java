@@ -20,6 +20,7 @@ import java.io.FileReader;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Node implements Runnable{	
 	//The data
@@ -48,16 +49,17 @@ public class Node implements Runnable{
  	
  	//Gets updates information
  	static BlockingQueue<int[]> updates;
- 	
  	//Gets messages
  	static BlockingQueue<String[]> messages;
-
+ 	ReentrantLock lock;
+ 	
  	//The information about the node
  	static int port = 1;
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
  	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
+ 		this.lock = new ReentrantLock();
  		this.account_list = new int[2048];		
  		this.account_list = new int[2048];
  		this.account_index = new int[2048];
@@ -375,14 +377,17 @@ public class Node implements Runnable{
 				String[] message = null;
 				
 				synchronized(messages){
+				System.err.println("M: waiting");
 				while (messages.size() == 0) {
-					System.err.println("M: waiting");
-					wait();
+					//Waiting for an element
 				}
-								
+				//Locks access to messages
+				lock.lock();				
 				try {message= messages.remove();
 					notifyAll();
 				} catch(Exception e) {} 
+				//unlocks
+				lock.unlock();
 				}
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
@@ -463,7 +468,12 @@ public class Node implements Runnable{
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				synchronized(messages){messages.add(message);}
+				synchronized(messages){
+					//Locks access to messages
+					lock.lock();
+					messages.add(message);
+					//unlocks
+					lock.unlock();}
 				System.err.println("R: Sent to messenger");
 			}
 		}
