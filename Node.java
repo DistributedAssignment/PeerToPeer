@@ -18,6 +18,8 @@ import java.io.BufferedReader;
 import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Node implements Runnable{	
 	//The data
@@ -45,10 +47,10 @@ public class Node implements Runnable{
  	static int[] port_list;
  	
  	//Gets updates information
- 	static Queue<int[]> updates;
+ 	static BlockingQueue<int[]> updates;
  	
  	//Gets messages
- 	static Queue<String[]> messages;
+ 	static BlockingQueue<String[]> messages;
 
  	//The information about the node
  	static int port = 1;
@@ -67,8 +69,8 @@ public class Node implements Runnable{
  	 	this.IP_list = new InetAddress[2048];
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
- 	 	this.updates = new LinkedList<int[]>();
- 	 	this.messages= new LinkedList<String[]>();
+ 	 	this.updates = new ArrayBlockingQueue<int[]>(2048);
+ 	 	this.messages= new ArrayBlockingQueue<String[]>(2048);
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
@@ -332,10 +334,18 @@ public class Node implements Runnable{
 			try {
 				
 				int[] update;
-				synchronized(updates){				
-				try {update= updates.remove()}
+				synchronized(updates){
+				while (updates.size() == 0) {
+					System.err.println("U: waiting");
+					wait();
+				}
+								
+				try {update= updates.take();
+					notifyAll();
 				} catch(Exception e) {} 
-				Thread.sleep(500);}
+				}
+				
+			
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -362,13 +372,17 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
-				String[] message
-				synchronized(messages){ 
-				try {messsage = messages.remove()}
-					
-				} catch(Exception e) {} 
-				Thread.sleep(500);
+				String[] message;
+				
+				synchronized(messages){
+				while (messages.size() == 0) {
+					System.err.println("M: waiting");
+					wait();
 				}
+								
+				try {message= messages.take();
+					notifyAll();
+				} catch(Exception e) {} 
 				}
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
