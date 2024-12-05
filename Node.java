@@ -68,7 +68,7 @@ public class Node implements Runnable{
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
  	 	this.updates = new LinkedList<int[]>();
- 	 	//this.inputs= new LinkedList<String>();
+ 	 	this.messages= new LinkedList<String>();
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
