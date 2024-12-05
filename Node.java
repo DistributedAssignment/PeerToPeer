@@ -54,6 +54,7 @@ public class Node implements Runnable{
  	static int port = 1;
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
+ 	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
  		this.account_list = new int[2048];		
  		this.account_list = new int[2048];
@@ -198,14 +199,27 @@ public class Node implements Runnable{
 		 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
 		 * and notify all other nodes
 		 */
-			DatagramSocket socket_temp = null;
-			DatagramPacket packet = null;
-			byte[] up_data = new byte[65536];
+		DatagramSocket socket_temp = null;
+		DatagramPacket packet = null;
+		byte[] up_data = new byte[65536];
+			
+		int temp_port = 1;	
+	    setup= false;
+		while (setup == false) {
+	    	try {
+	    		setup = true;
+	    		socket_temp = new DatagramSocket(temp_port,ip);
+			} catch (SocketException e) {
+				setup = false;
+				temp_port +=1;
+			}
+	    }
+		
 		try { 
-			socket_temp = new DatagramSocket(port,ip);
 			up_data = ("New Node Initial "+port+" "+ip).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_temp.send(packet);
+			packet = null;
 		} catch (Exception e) {e.printStackTrace();}
 		
 		packet = null;
@@ -214,6 +228,7 @@ public class Node implements Runnable{
 		try { socket_temp.receive(packet);
 		} catch (Exception e) {e.printStackTrace();}
 		socket_temp.close();
+		packet = null;
 		System.err.println("Account data received");
 		//Now this node should tell all other nodes about this node and will then start to update the other nodes
 		//It should also send the account list to this node
