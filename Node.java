@@ -412,6 +412,7 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
+				System.err.println("R: Sent to messenger");
 				message = temp.split(" ");
 				System.err.println("R: Sent to messenger");
 				(new Messenger(message)).start();
