@@ -320,8 +320,8 @@ public class Node {
 				
 				int[] update = null;
 				boolean wait = false;
-				System.err.println("u: waiting");
-				while (wait) {
+				System.err.println("U: Waiting");
+				while (!wait) {
 				 wait = upcl.tryAcquire();
 				}
 
@@ -340,7 +340,7 @@ public class Node {
 					}
 				}
 				System.err.println("U: Updated");
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 			}
 		}
 	}
@@ -357,10 +357,9 @@ public class Node {
 				//Gets the message and acts accordingly
 				String[] message = null;
 				boolean wait = false;
-				System.err.println("M: waiting");
+				System.err.println("M: Waiting");
 				while (!wait) {
 				 wait = mesrec.tryAcquire();
-				 System.err.println(wait);
 				}
 				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
@@ -417,7 +416,7 @@ public class Node {
 					
 				} 
 				System.err.println("M complete");
-			} catch (Exception e) {}
+			} catch (Exception e) {e.printStackTrace();}
 
 			}
 		}
