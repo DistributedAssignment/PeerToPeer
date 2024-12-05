@@ -299,8 +299,9 @@ public class Node implements Runnable{
 					} catch (Exception e) {e.printStackTrace();}
 					
 				} 
+				System.err.println("M complete");
 			} catch (Exception e) {}
-			System.err.println("M complete");
+
 			}
 		}
 	}
