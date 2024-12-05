@@ -348,11 +348,15 @@ public class Node implements Runnable{
  			if (com != -1) {
  				System.err.println("C: Joining Network");
  				//Adds it self to the node lists
+ 				
  				for (int i = 0; i<port_list.length;i++) {
+ 					System.out.println(ip_list[i]);
  					if (ip_list[i].trim().equals("NULL")) {
  						IP_list[i] = ip;
  						ip_list[i] = ip_str;
  						port_list[i] = port;
+ 						break;
+ 						
  					}
  				}	
  					
