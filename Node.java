@@ -333,7 +333,7 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				
-				int[] update;
+				int[] update = null;
 				synchronized(updates){
 				while (updates.size() == 0) {
 					System.err.println("U: waiting");
@@ -372,7 +372,7 @@ public class Node implements Runnable{
 			while (true) {
 			try {
 				//Gets the message and acts accordingly
-				String[] message;
+				String[] message = null;
 				
 				synchronized(messages){
 				while (messages.size() == 0) {
