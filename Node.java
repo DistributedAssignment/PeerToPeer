@@ -249,7 +249,7 @@ public class Node implements Runnable{
 			try {
 				//Gets the message and acts accordingly
 				String[] message = messages.remove();
-				System.err.println("M: Message received");
+				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
 		 	 		account_list[Integer.parseInt(message[2])] = Integer.parseInt(message[1]);
