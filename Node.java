@@ -18,40 +18,38 @@ import java.io.BufferedReader;
 import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.*;
 
-public class Node implements Runnable{	
+public class Node {	
 	//The data
-	static int[] account_list ;
+	static int[] account_list = new int[2048] ;
 	//To make it easier to send data to new nodes
-	static int[] account_index;
+	static int[] account_index = new int[2048];
 	//This is the index of a changed account
-	static int change_index;
+	static int change_index = -1;
 	//The scoket and packet for sending and receiving
-	static DatagramSocket socket_s;
-	static DatagramSocket socket_r;
-	static DatagramSocket socket_m;
+	static DatagramSocket socket_s = null;
+	static DatagramSocket socket_r = null;
+	static DatagramSocket socket_m = null;
 	//For sending data too other nodes
-	static byte[] data;
+	static byte[] data = new byte[65536];
 	//For sending data too other nodes
-	static byte[] data_node;
+	static byte[] data_node = new byte[65536];
 	//For receiving data from other nodes
-	static byte[] receive;
+	static byte[] receive = new byte[65536];
 	//For out putting information about what the node is doing in the background
  	static PrintStream psB;
  	
  	//The list of nodes on the network
- 	static InetAddress[] IP_list;
- 	static String[] ip_list;
- 	static int[] port_list;
+ 	static InetAddress[] IP_list = new InetAddress[2048];
+ 	static String[] ip_list = new String[2048];
+ 	static int[] port_list = new int[2048];
  	
  	//Gets updates information
- 	static BlockingQueue<int[]> updates;
+ 	static BlockingQueue<int[]> updates = new LinkedBlockingQueue<int[]>(2048);
  	//Gets messages
- 	static BlockingQueue<String[]> messages;
- 	ReentrantLock lock;
+ 	static BlockingQueue<String[]> messages = new LinkedBlockingQueue<String[]>(2048);
+ 	Semaphore elements = new Semaphore(0);
  	
  	//The information about the node
  	static int port = 1;
@@ -59,28 +57,40 @@ public class Node implements Runnable{
  	static InetAddress ip;
  	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
- 		this.lock = new ReentrantLock();
- 		this.account_list = new int[2048];		
- 		this.account_list = new int[2048];
- 		this.account_index = new int[2048];
- 		this.change_index=-1;
- 		this.socket_s = null;
- 		this.socket_r = null;
- 		this.data = new byte[65536];
- 		this.receive = new byte[65536];
- 	 	this.IP_list = new InetAddress[2048];
- 	 	this.ip_list = new String[2048];
- 	 	this.port_list = new int[2048];
- 	 	this.updates = new LinkedBlockingDeque<int[]>(2048);
- 	 	this.messages= new LinkedBlockingDeque<String[]>(2048);
- 	 	this.port = 1;
- 	 	this.ip_str = getLocalAddress();
- 	 	try {this.ip = InetAddress.getByName(ip_str);}
- 	 	catch (Exception e) {e.printStackTrace();}
+ 		
  	}
  	
- 	public void run() {
- 		System.err.println("Start");
+ 	public void create() {
+		Updater u = new Updater();
+		Receiver r = new Receiver();
+		Client c = new Client();
+		Messenger m = new Messenger();
+		//c.setDaemon(true);
+		c.start();
+		u.start();
+		r.start();
+		m.start();
+		try{
+		c.join();
+		u.join();
+		r.join();
+		m.join();} catch (Exception e) {}
+ 	}
+ 	
+ 	public static void main(String args[]) {
+ 	 	try {ip = InetAddress.getByName(ip_str);}
+ 	 	catch (Exception e) {e.printStackTrace();}
+	    try {
+		    Random ran = new Random();
+	 		int name = ran.nextInt(100);
+	 		psB = new PrintStream("Node Data "+name+".log");
+		    System.setErr(psB);
+	 		System.out.println(name);
+	 		System.err.println("Name "+name);
+
+	    } catch (FileNotFoundException e) {e.printStackTrace();}
+ 		
+	    System.err.println("Start");
  		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
 		for (int i = 0; i<account_list.length; i++) {
@@ -282,38 +292,11 @@ public class Node implements Runnable{
 			System.err.println("Network Created");
 			/***THE NETWORK NOW EXISTS***/
 			}
-		Updater u = new Updater();
-		Receiver r = new Receiver();
-		Client c = new Client();
-		Messenger m = new Messenger();
-		//c.setDaemon(true);
-		c.start();
-		u.start();
-		r.start();
-		m.start();
-		try{
-		c.join();
-		u.join();
-		r.join();
-		m.join();} catch (Exception e) {}
-	}
- 	
- 	
- 	public static void main(String args[]) {
-	    try {
-		    Random ran = new Random();
-	 		int name = ran.nextInt(100);
-	 		psB = new PrintStream("Node Data "+name+".log");
-		    System.setErr(psB);
-	 		System.out.println(name);
-	 		System.err.println("Name "+name);
-
-	    } catch (FileNotFoundException e) {e.printStackTrace();}
- 		
-	    Node n = new Node();
- 		n.run();
+			
+			Node node = new Node();
+			node.create();
  	}
-
+ 	
 	//For retrieving the IP
     private static String getLocalAddress() {
     try (DatagramSocket skt = new DatagramSocket()) {
@@ -336,9 +319,9 @@ public class Node implements Runnable{
 			try {
 				
 				int[] update = null;
+				System.err.println("U: waiting");
 				synchronized(updates){
 				while (updates.size() == 0) {
-					System.err.println("U: waiting");
 					wait();
 				}
 								
@@ -375,20 +358,8 @@ public class Node implements Runnable{
 			try {
 				//Gets the message and acts accordingly
 				String[] message = null;
-				
-				synchronized(messages){
-				System.err.println("M: waiting");
-				while (messages.size() == 0) {
-					//Waiting for an element
-				}
-				//Locks access to messages
-				lock.lock();				
-				try {message= messages.remove();
-					notifyAll();
-				} catch(Exception e) {} 
-				//unlocks
-				lock.unlock();
-				}
+				elements.tryAcquire();
+				message = messages.remove();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
@@ -463,17 +434,14 @@ public class Node implements Runnable{
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+
 				System.err.println("R: Received");
 				String[] message;	
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
 				message = temp.split(" ");
-				synchronized(messages){
-					//Locks access to messages
-					lock.lock();
-					messages.add(message);
-					//unlocks
-					lock.unlock();}
+				messages.add(message);
+				elements.release();
 				System.err.println("R: Sent to messenger");
 			}
 		}
