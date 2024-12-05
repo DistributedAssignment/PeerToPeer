@@ -19,6 +19,7 @@ import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class Node implements Runnable{	
 	//The data
@@ -68,6 +69,8 @@ public class Node implements Runnable{
  	 	this.IP_list = new InetAddress[2048];
  	 	this.ip_list = new String[2048];
  	 	this.port_list = new int[2048];
+ 	 	this.updates = new ArrayBlockingQueue<int[]>(2048);
+ 	 	this.messages= new ArrayBlockingQueue<String[]>(2048);
  	 	this.port = 1;
  	 	this.ip_str = getLocalAddress();
  	 	try {this.ip = InetAddress.getByName(ip_str);}
@@ -328,12 +331,8 @@ public class Node implements Runnable{
 		
 		public void run() {
 			while (true) {
-			try {
-
-				synchronized(updates){while (updates.poll()==null){
-				    Thread.sleep(10);}}
-				
-				int[] update = updates.remove();
+			try {	
+				synchronized(updates) { int[] update = updates.take();}
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -364,7 +363,7 @@ public class Node implements Runnable{
 				    Thread.sleep(100);
 				}
 				}
-				String[] message = messages.remove();
+				String[] message = messages.take();
 				System.err.println("M: Message received "+String.join(",",message));
 				if (message[0].trim().equals("Update")) {
 					System.err.println("M: "+message[0].trim());
