@@ -77,6 +77,10 @@ public class Node implements Runnable{
  	public void run() {
 	    Random ran = new Random();
  		int name = ran.nextInt(100);
+ 		
+ 		try {psB = new PrintStream("Node Data "+name+".log");
+ 		} catch (FileNotFoundException e) {e.printStackTrace();}
+ 		
  		System.out.println(name);
  		System.err.println("Name "+name);
  		System.err.println("Start");
@@ -91,9 +95,8 @@ public class Node implements Runnable{
 		
 	    //Sets up the nodes socket
 	    try {
-		    psB = new PrintStream("Node Data.log");
 	    	ip = InetAddress.getByName(ip_str);
-	    } catch (UnknownHostException | FileNotFoundException e) {e.printStackTrace();}
+	    } catch (UnknownHostException e) {e.printStackTrace();}
 	
 	    boolean setup= false;
 		while (setup == false) {
