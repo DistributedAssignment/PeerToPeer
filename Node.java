@@ -361,7 +361,28 @@ public class Node {
 								packet = null;
 							}
 						}
-					
+						
+						//Updates its node list
+						int k = 0;
+			 			for (int i = 0; i<ip_list.length; i++) {
+			 				if (ip_list[i]==null) {
+			 					port_list[i] = Integer.parseInt(message[1]);
+			 					ip_list[i] = message[2];	
+			 					try {IP_list[i] = InetAddress.getByName(message[2]);
+			 					} catch (Exception e) {}
+			 					k = i;
+			 				}
+			 			}
+			 			
+					String account_dat;
+				   for (int j = 0; j<2048; j++) {
+				        if (account_index[i] != -1) {
+				        	account_dat = account_dat + account_list[i] +","+account_index[i] + " ";
+				        }
+				     }
+					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
+					socket_m.send(packet);
+					packet = null;
 					
 					//Reconstructs data
 					try {
