@@ -325,7 +325,7 @@ public class Node {
 		
 		public void run() {
 			//For sending data too other nodes
-			byte[] data_node = new byte[65536];
+			byte[] data_node;
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
@@ -349,6 +349,7 @@ public class Node {
 				} else if (message[0].trim().equals("New:Node:Initial")) {
 						System.err.println("M: "+message[0].trim());
 						String temp = "New:Node "+message[1]+" "+message[2];
+						System.err.println(temp);
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
