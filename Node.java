@@ -131,7 +131,10 @@ public class Node implements Runnable{
 		String everything = null;
 		int com = -1;
 		try {
-		Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\import.bat");
+		String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
+		"I:\\git\\PeerToPeer\\import.bat"};
+		File workDir = new File( "I:\\git\\PeerToPeer\\");
+		Process process = Runtime.getRuntime().exec( commands, null, workDir);
 		System.err.println("Import");
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
@@ -155,12 +158,12 @@ public class Node implements Runnable{
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
 			if (IP_data[i].trim().equals("NULL")) {
-				com = i;
 				IP_list[i] = null;
 				ip_list[i] = null;
 				port_list[i] = -1;
 			}
 			else {
+				com = i;
 			System.out.println(IP_data[i]);
 			try {
 				ip_list[i] = IP_data[i];
@@ -180,7 +183,7 @@ public class Node implements Runnable{
 				//Adds it self to the node lists
 				
 				for (int i = 0; i<port_list.length;i++) {
-					if (ip_list[i].trim().equals("NULL")) {
+					if (ip_list[i]==null) {
 						IP_list[i] = ip;
 						ip_list[i] = ip_str;
 						port_list[i] = port;
@@ -251,7 +254,10 @@ public class Node implements Runnable{
 			System.err.println("Data Created");
 			//Commits this to the git repository
 			try {
-			Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
+				String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
+				"I:\\git\\PeerToPeer\\import.bat"};
+				File workDir = new File( "I:\\git\\PeerToPeer\\");
+				Process process = Runtime.getRuntime().exec( commands, null, workDir);
 			} catch (Exception e) {e.printStackTrace();}
 			System.err.println("Data Commited");
 			System.err.println("Network Created");
@@ -383,7 +389,10 @@ public class Node implements Runnable{
 					
 					//Commits this to the git repository
 					try {
-					Runtime.getRuntime().exec("cmd /c i:\\git\\PeerToPeer\\commit.bat");
+						String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
+						"I:\\git\\PeerToPeer\\import.bat"};
+						File workDir = new File( "I:\\git\\PeerToPeer\\");
+						Process process = Runtime.getRuntime().exec( commands, null, workDir);
 					} catch (Exception e) {e.printStackTrace();}
 					
 				} 
