@@ -40,11 +40,11 @@ public class Node {
  	static int port = 1;
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
- 	
+ 	static String name_data = ";"
 	//This is the index of a changed account
 	static int change_index = -1;
 	//For out putting information about what the node is doing in the background
- 	static PrintStream psB;
+ 	//static PrintStream psB;
  	
  	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
@@ -68,10 +68,8 @@ public class Node {
 	    try {
 		    Random ran = new Random();
 	 		int name = ran.nextInt(100);
-	 		psB = new PrintStream("Node Data "+name+".log");
-		    System.setErr(psB);
 	 		System.out.println(name);
-	 		System.err.println("Name "+name);
+	 		name_data = "Name "+name;
 
 	    } catch (FileNotFoundException e) {e.printStackTrace();}
  		
@@ -294,6 +292,7 @@ public class Node {
 }
 			
 	private class Updater extends Thread{
+		static PrintStream psB;
 		int[] update;
 		public Updater(int[] u) {
 			this.update = new int [2];
@@ -304,6 +303,12 @@ public class Node {
 		public void run() {
 			byte[] data = new byte[65536];
 			try {
+	 			try {	 		
+	 	 			psB = new PrintStream("Messenger Node Data "+name+".log");
+	 			    System.setErr(psB);
+	 			    } catch (Exception e) {
+	 			    	e.printStackTrace();
+	 			    }
 				System.err.println("U: Updating");
 				String temp_data = "Update "+update[0]+" "+update[1];
 				data = temp_data.getBytes();
@@ -321,6 +326,7 @@ public class Node {
 	
 	private class Messenger extends Thread{
 		String[] message;
+		static PrintStream psB;
 		public Messenger(String[] ms) {
 			this.message = new String[ms.length];
 			for (int i = 0; i<ms.length; i++) {
@@ -331,6 +337,12 @@ public class Node {
 		public void run() {
 			//For sending data too other nodes
 			byte[] data_node = new byte[65536];
+ 			try {	 		
+ 			psB = new PrintStream("Messenger Node Data "+name+".log");
+		    System.setErr(psB);
+		    } catch (Exception e) {
+		    	e.printStackTrace();
+		    }
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
@@ -413,12 +425,18 @@ public class Node {
 	}
 	
 	private class Receiver extends Thread{
-		
+		static PrintStream psB;
 		public Receiver() {
 			
 		}
 		
 		public void run() {
+ 			try {	 		
+ 			psB = new PrintStream("Receive Node Data "+name+".log");
+		    System.setErr(psB);
+		    } catch (Exception e) {
+		    	e.printStackTrace();
+		    }
 			byte[] receive = new byte[65536];
 			while (true) { 
 				receive = new byte[65536];
@@ -428,7 +446,6 @@ public class Node {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
 				System.err.println("R: Received");
 				String[] message;	
 				String temp = new String(receive);
@@ -438,6 +455,7 @@ public class Node {
 				System.err.println("R: Sent to messenger");
 				(new Messenger(message)).start();
 				System.err.println("R: Sent to messenger");
+				packet =null;
 			}
 		}
 	}
@@ -448,10 +466,18 @@ public class Node {
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
  		private static Scanner myObj = new Scanner(System.in);
+ 		private static PrintStream psB;
  		public Client() {
  		}
  		
  		public void run() {	
+ 			try {	 		
+ 			psB = new PrintStream("Client Node Data "+name+".log");
+		    System.setErr(psB);
+		    } catch (Exception e) {
+		    	e.printStackTrace();
+		    }
+ 			
  			System.err.println("C: Started");
  			
  			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
