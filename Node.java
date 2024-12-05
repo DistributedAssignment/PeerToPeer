@@ -1,6 +1,7 @@
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -61,16 +62,10 @@ public class Node {
  	}
  	
  	public static void main(String args[]) {
+ 		PrintStream pbM = null;
  	 	try {ip = InetAddress.getByName(ip_str);}
  	 	catch (Exception e) {e.printStackTrace();}
-	    try {
-		    Random ran = new Random();
-	 		name = ran.nextInt(100);
-	 		System.out.println(name);
-
-	    } catch (Exception e) {e.printStackTrace();}
- 		
-	    System.err.println("Start");
+ 		System.out.println("Connecting... ");
  		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
 		for (int i = 0; i<account_list.length; i++) {
@@ -119,7 +114,11 @@ public class Node {
 			}
 	    }
 		
-		System.out.println(port);
+	    try {
+	    	name = "Node, network: "+ip_str+", port: "+port;
+	 		pbM = new PrintStream("Data\\Setup data "+name+".txt");
+	 		System.setErr(pbM);
+	    } catch (Exception e) {e.printStackTrace();}
 		System.err.println("Initalize");
 		
 		//The account and port data is read from the repository
@@ -152,14 +151,13 @@ public class Node {
 		
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
-			if (IP_data[i].trim().equals("NULL")) {
+			if ((IP_data[i].trim()).equals("null")) {
 				IP_list[i] = null;
 				ip_list[i] = null;
 				port_list[i] = -1;
 			}
 			else {
-				com = i;
-			System.out.println(IP_data[i]);
+			com = i;
 			try {
 				ip_list[i] = IP_data[i].trim();
 				IP_list[i] = InetAddress.getByName(IP_data[i].trim());
@@ -197,7 +195,6 @@ public class Node {
 		byte[] up_data = new byte[65536];
 		try {
 			up_data = ("NewI "+port+" "+ip_str).getBytes();
-			System.out.println(up_data.length);
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_r.send(packet);
 			packet = null;
@@ -215,14 +212,16 @@ public class Node {
 		
 		//The account data is constructeds
 		String temp = new String(re_data);
-		data = temp.split(" ");
-		String[] a;
-		for (int i = 0; i<data.length; i++) {
-			a= data[i].split(",");
-			int b = Integer.parseInt(a[0].trim());
-			int in = Integer.parseInt(a[1].trim());
-			account_list[in] = b;
-			account_index[in] = in;
+		if (temp.length()<2) {
+			data = temp.split(" ");
+			String[] a;
+			for (int i = 0; i<data.length; i++) {
+				a= data[i].split(",");
+				int b = Integer.parseInt(a[0].trim());
+				int in = Integer.parseInt(a[1].trim());
+				account_list[in] = b;
+				account_index[in] = in;
+			}
 		}
 		System.err.println("Account data constructed");
 		/***THE NODE IS NOW ON THE NETWORK***/
@@ -258,7 +257,7 @@ public class Node {
 			System.err.println("Network Created");
 			/***THE NETWORK NOW EXISTS***/
 			}
-			
+			pbM.close();
 			Node node = new Node();
 			node.create();
  	}
@@ -275,6 +274,7 @@ public class Node {
 }
 			
 	private class Updater extends Thread{
+		
 		int[] update;
 		public Updater(int[] u) {
 			this.update = new int [2];
@@ -283,6 +283,12 @@ public class Node {
 		}
 		
 		public void run() {
+			PrintStream pbU = null;
+		    try {
+		 		pbU = new PrintStream("Data\\Updater data "+name+".txt");
+		 		System.setErr(pbU);
+		    } catch (Exception e) {e.printStackTrace();}
+		    
 			byte[] data = new byte[65536];
 			try {
 				System.err.println("U: Updating");
@@ -296,6 +302,7 @@ public class Node {
 					}
 				}
 				System.err.println("U: Updated");
+				pbU.close();
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	}
@@ -310,16 +317,22 @@ public class Node {
 		}
 		
 		public void run() {
+			PrintStream pbMe = null;
+		    try {
+		 		pbMe = new PrintStream("Data\\Messenger data "+name+".txt");
+		 		System.setErr(pbMe);
+		    } catch (Exception e) {e.printStackTrace();}
+		    
 			//For sending data too other nodes
-			byte[] data_node = null;
+			byte[] data_node = null;		    
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
-				if (message[0].trim().equals("Update")) {
-					System.err.println("M: "+message[0].trim());
-		 	 		account_list[Integer.parseInt(message[2])] = Integer.parseInt(message[1]);
-		 	 		account_index[Integer.parseInt(message[2])] = Integer.parseInt(message[2]);
-				} else if (message[0].trim().equals("New")) {
+				System.err.println("M: "+message[0].trim());
+				if ((message[0].trim()).equals("Update")) {
+					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[1].trim());}
+					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
+				} else if ((message[0].trim()).equals("New")) {
 					System.err.println("M: "+message[0].trim());
 					//Updates its node list
 		 			for (int i = 0; i<ip_list.length; i++) {
@@ -333,8 +346,7 @@ public class Node {
 					
 		 			
 					//If this is the node with initial contact, all nodes are updated by it
-				} else if (message[0].trim().equals("NewI")) {
-						System.err.println("M: "+message[0].trim());
+				} else if ((message[0].trim()).equals("NewI")) {
 						String temp = "New "+message[1].trim()+" "+message[2].trim();
 						System.err.println(temp);
 						data_node = temp.getBytes();
@@ -367,8 +379,6 @@ public class Node {
 				        }
 				     }
 				   data_node = account_dat.getBytes();
-				   System.out.println(port_list[k]);
-				   System.out.println(IP_list[k]);
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
 					packet = null;
@@ -397,6 +407,7 @@ public class Node {
 					
 				} 
 				System.err.println("M complete");
+				pbMe.close();
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	}
@@ -407,6 +418,12 @@ public class Node {
 		}
 		
 		public void run() {
+			PrintStream pbR = null;
+		    try {
+		 		pbR = new PrintStream("Data\\Receiver data "+name+".txt");
+		 		System.setErr(pbR);
+		    } catch (Exception e) {e.printStackTrace();}
+		    
 			byte[] receive = new byte[65536];
 			while (true) { 
 				receive = new byte[65536];
@@ -420,11 +437,9 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
-				System.err.println("R: Sent to messenger");
 				message = temp.split(" ");
-				System.err.println("R: Sent to messenger");
 				(new Messenger(message)).start();
-				System.err.println("R: Sent to messenger");
+				System.err.println("R: Created messenger");
 				packet =null;
 			}
 		}
@@ -441,7 +456,10 @@ public class Node {
  		}
  		
  		public void run() {	
- 			
+		    try {
+		 		PrintStream pbC = new PrintStream("Data\\Client data "+name+".txt");
+		 		System.setErr(pbC);
+		    } catch (Exception e) {e.printStackTrace();}
  			System.err.println("C: Started");
  			
  			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
