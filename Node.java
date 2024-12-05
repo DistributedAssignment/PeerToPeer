@@ -22,7 +22,7 @@ import java.util.concurrent.*;
 public class Node {	
 	//The data
 	static int[] account_list = new int[2048] ;
-	//To make it easier to send data to New:Nodes
+	//To make it easier to send data to News
 	static int[] account_index = new int[2048];
 	
 	//The scoket and packet for sending and receiving
@@ -161,9 +161,9 @@ public class Node {
 				com = i;
 			System.out.println(IP_data[i]);
 			try {
-				ip_list[i] = IP_data[i];
-				IP_list[i] = InetAddress.getByName(IP_data[i]);
-				port_list[i] = Integer.parseInt(port_data[i]);
+				ip_list[i] = IP_data[i].trim();
+				IP_list[i] = InetAddress.getByName(IP_data[i].trim());
+				port_list[i] = Integer.parseInt(port_data[i].trim());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -193,35 +193,21 @@ public class Node {
 		 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
 		 * and notify all other nodes
 		 */
-		DatagramSocket socket_temp = null;
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
-			
-		int temp_port = 1;	
-	    setup= false;
-		while (setup == false) {
-	    	try {
-	    		setup = true;
-	    		socket_temp = new DatagramSocket(temp_port,ip);
-			} catch (SocketException e) {
-				setup = false;
-				temp_port +=1;
-			}
-	    }
-		
-		try { 
-			up_data = ("New:Node:Initial "+port+" "+ip).getBytes();
+		try {
+			up_data = ("NewI "+port+" "+ip_str).getBytes();
+			System.out.println(up_data.length);
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
-			socket_temp.send(packet);
+			socket_r.send(packet);
 			packet = null;
 		} catch (Exception e) {e.printStackTrace();}
 		
 		packet = null;
 		byte[] re_data = new byte[65536];
 		packet = new DatagramPacket(re_data, re_data.length);
-		try { socket_temp.receive(packet);
-		} catch (Exception e) {e.printStackTrace();}
-		socket_temp.close();
+		try { socket_r.receive(packet);
+		} catch (Exception e) {e.printStackTrace();}		
 		packet = null;
 		System.err.println("Account data received");
 		//Now this node should tell all other nodes about this node and will then start to update the other nodes
@@ -255,7 +241,7 @@ public class Node {
 	        }
 	        myWriter.write("\n");
 	        for (int j = 0; j<2048; j++) {
-	        	if (ip_list[j]==null) {myWriter.write("NULL ");  	
+	        	if (ip_list[j]==null) {myWriter.write("null ");  	
 	        	} else {myWriter.write(ip_list[j]+" "); }
 	        }
 	        myWriter.close();
@@ -325,7 +311,7 @@ public class Node {
 		
 		public void run() {
 			//For sending data too other nodes
-			byte[] data_node;
+			byte[] data_node = null;
 			try {
 				//Gets the message and acts accordingly
 				System.err.println("M: Message received "+String.join(",",message));
@@ -333,22 +319,23 @@ public class Node {
 					System.err.println("M: "+message[0].trim());
 		 	 		account_list[Integer.parseInt(message[2])] = Integer.parseInt(message[1]);
 		 	 		account_index[Integer.parseInt(message[2])] = Integer.parseInt(message[2]);
-				} else if (message[0].trim().equals("New:Node")) {
+				} else if (message[0].trim().equals("New")) {
 					System.err.println("M: "+message[0].trim());
 					//Updates its node list
 		 			for (int i = 0; i<ip_list.length; i++) {
 		 				if (ip_list[i]==null) {
-		 					port_list[i] = Integer.parseInt(message[1]);
-		 					ip_list[i] = message[2];	
-		 					try {IP_list[i] = InetAddress.getByName(message[2]);
-		 					} catch (Exception e) {}
+		 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
+		 					synchronized(ip_list) {ip_list[i] = message[2].trim();	}
+		 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
+		 					} catch (Exception e) {}}
 		 				}
 		 			}
 					
+		 			
 					//If this is the node with initial contact, all nodes are updated by it
-				} else if (message[0].trim().equals("New:Node:Initial")) {
+				} else if (message[0].trim().equals("NewI")) {
 						System.err.println("M: "+message[0].trim());
-						String temp = "New:Node "+message[1]+" "+message[2];
+						String temp = "New "+message[1].trim()+" "+message[2].trim();
 						System.err.println(temp);
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
@@ -363,20 +350,25 @@ public class Node {
 						int k = 0;
 			 			for (int i = 0; i<ip_list.length; i++) {
 			 				if (ip_list[i]==null) {
-			 					port_list[i] = Integer.parseInt(message[1]);
-			 					ip_list[i] = message[2];	
-			 					try {IP_list[i] = InetAddress.getByName(message[2]);
-			 					} catch (Exception e) {}
+			 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
+			 					synchronized(ip_list) {ip_list[i] = message[2].trim();}	
+			 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
+			 					} catch (Exception e) {e.printStackTrace();}}
 			 					k = i;
+			 					break;
 			 				}
 			 			}
+			 		
 			 			
-					String account_dat = "";
+				String account_dat = "";
 				   for (int i = 0; i<2048; i++) {
 				        if (account_index[i] != -1) {
-				        	account_dat = account_dat + account_list[i] +","+account_index[i] + " ";
+				        	account_dat = account_dat + (account_list[i] +","+account_index[i] + " ").trim();
 				        }
 				     }
+				   data_node = account_dat.getBytes();
+				   System.out.println(port_list[k]);
+				   System.out.println(IP_list[k]);
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
 					packet = null;
