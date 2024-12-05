@@ -152,6 +152,7 @@ public class Node implements Runnable{
 		
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
+			System.out.prinln(IP_data[i]);
 			if (IP_data[i].trim().equals("NULL")) {
 				com = i;
 				IP_list[i] = null;
@@ -350,7 +351,6 @@ public class Node implements Runnable{
  				//Adds it self to the node lists
  				
  				for (int i = 0; i<port_list.length;i++) {
- 					System.out.println(ip_list[i]);
  					if (ip_list[i].trim().equals("NULL")) {
  						IP_list[i] = ip;
  						ip_list[i] = ip_str;
