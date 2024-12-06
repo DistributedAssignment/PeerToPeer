@@ -469,7 +469,7 @@ public class Node {
 				(new Messenger(message)).start();
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped 
-				if (temp="Disconnect;"+inds;) {
+				if (temp=="Disconnect;"+inds) {
 					break;
 				}
 			}
