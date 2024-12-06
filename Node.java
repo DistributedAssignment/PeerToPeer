@@ -36,6 +36,7 @@ public class Node {
  	static String[] ip_list = new String[2048];
  	static int[] port_list = new int[2048];
  	static String[] name_list = new String[2048];
+ 	static int[] index_list = new String[2048];
  	//The information about the node
  	static int port = 1;
  	static String ip_str = getLocalAddress();
@@ -150,6 +151,7 @@ public class Node {
 		String[] port_data = data[0].split(";");
 		String[] IP_data = data[1].split(";");
 		String[] name_data = data[2].split(";");
+		String[] index_data = data[3].split(";");
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
 			if ((IP_data[i].trim()).equals("null")) {
@@ -157,6 +159,7 @@ public class Node {
 				ip_list[i] = null;
 				port_list[i] = -1;
 				name_list[i] = null;
+				index_list[i] = -1;
 			}
 			else {
 			com = i;
@@ -165,6 +168,7 @@ public class Node {
 				ip_list[i] = IP_data[i].trim();
 				IP_list[i] = InetAddress.getByName(IP_data[i].trim());
 				port_list[i] = Integer.parseInt(port_data[i].trim());
+				index_list[i] = Integer.parseInt(index_data[i].trim());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -186,7 +190,8 @@ public class Node {
 						break;
 						
 					}
-				}	
+				}
+				index_list[inds] = inds;
 					
 		/*Now it needs to be added to the network it does by contacting the node in com
 		 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
@@ -197,7 +202,7 @@ public class Node {
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
 		try {
-			up_data = ("NewI;"+port+";"+ip_str+";"+name).getBytes();
+			up_data = ("NewI;"+port+";"+ip_str+";"+name+";"+index).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_r.send(packet);
 			packet = null;
@@ -234,6 +239,7 @@ public class Node {
 				IP_list[0]= ip;
 				port_list[0] = port;
 				name_list[0] = name;
+				index_list[0] = 0;
 			
 			try {
 	        FileWriter myWriter = new FileWriter("Data.txt");
@@ -249,6 +255,10 @@ public class Node {
 	        for (int j = 0; j<2048; j++) {
 	        	if (name_list[j]==null) {myWriter.write("null;");  	
 	        	} else {myWriter.write(name_list[j]+";"); }
+	        }
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	myWriter.write(index_list[j]+";");
 	        }
 	        myWriter.close();
 			} catch (Exception e) {e.printStackTrace();}
@@ -320,37 +330,32 @@ public class Node {
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
 				} else if ((message[0].trim()).equals("New")) {
 					//Updates its node list
-					int n =Integer.parseInt(message[1].trim());
-		 			for (int i = 0; i<ip_list.length; i++) {
-		 				if (port_list[i]==n) {
-		 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
-		 					synchronized(ip_list) {ip_list[i] = message[2].trim();	}
-		 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
-		 					} catch (Exception e) {}}
-		 					synchronized(ip_list) {name_list[i] = message[3].trim();	}
-		 					break;
-		 				}
-		 			}
-					
+					int n =Integer.parseInt(message[4].trim());
+	 					synchronized(port_list) {port_list[n] = Integer.parseInt(message[1].trim());}
+	 					synchronized(ip_list) {ip_list[n] = message[2].trim();	}
+	 					synchronized(IP_list) {try {IP_list[n] = InetAddress.getByName(message[2].trim());
+	 					} catch (Exception e) {}}
+	 					synchronized(name_list) {name_list[n] = message[3].trim();	}
+	 					synchronized(index_list) {index list[n] = n;	}
+		 			
+		 		
 		 			
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if ((message[0].trim()).equals("Disconnect")) {
 					//Updates its node list
 					int n =Integer.parseInt(message[1].trim());
-		 			for (int i = 0; i<ip_list.length; i++) {
-		 				if (port_list[i]==n) {
-		 					synchronized(port_list) {port_list[i] = -1;}
-		 					synchronized(ip_list) {ip_list[i] = null;	}
-		 					synchronized(IP_list) {try {IP_list[i] = null;
-		 					} catch (Exception e) {}}
-		 					synchronized(ip_list) {name_list[i] =null;}
-		 				}
-		 			}
+	 					synchronized(port_list) {port_list[n] = -1;}
+	 					synchronized(ip_list) {ip_list[n] = null;	}
+	 					synchronized(IP_list) {try {IP_list[n] = null;
+	 					} catch (Exception e) {}}
+	 					synchronized(name_list) {name_list[n] =null;}
+	 					synchronized(index_list) {index_list[n] =null;}
+		 			
 					
 		 			
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if ((message[0].trim()).equals("NewI")) {
-						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim();
+						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim()+";"+message[4].trim();
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
@@ -402,6 +407,10 @@ public class Node {
 			        for (int j = 0; j<2048; j++) {
 			        	if (name_list.equals(null)) {myWriter.write("null;");  	
 			        	} else {myWriter.write(name_list[j]+";");}
+			        }
+			        myWriter.write("\n");
+			        for (int j = 0; j<2048; j++) {
+			        myWriter.write(index_list[j]+";");
 			        }
 			        myWriter.close();
 					} catch (Exception e) {e.printStackTrace();}
@@ -512,7 +521,7 @@ public class Node {
  				   break;
  				  case 3:
  						byte[] dis;
- 						String temp_data = "Disconnect;"+port;
+ 						String temp_data = "Disconnect;"+inds;
  						dis = temp_data.getBytes();
  						for (int i =0;i<IP_list.length;i++) {
  							if (port_list[i] != -1) {
@@ -527,7 +536,7 @@ public class Node {
  						synchronized(ip_list)  {ip_list[inds]=null; }
  						synchronized(IP_list)  {IP_list[inds]=null; }
  						synchronized(name_list)  {name_list[inds]=null; }
- 	 						
+ 						synchronized(index_list)  {index_list[inds]=-1; }	
 						//Reconstructs data
 						try {
 				        FileWriter myWriter = new FileWriter("Data.txt");
@@ -543,6 +552,10 @@ public class Node {
 				        for (int j = 0; j<2048; j++) {
 				        	if (name_list.equals(null)) {myWriter.write("null;");  	
 				        	} else {myWriter.write(name_list[j]+";");}
+				        }			
+				        myWriter.write("\n");
+				        for (int j = 0; j<2048; j++) {
+				        	myWriter.write(index_list[j]+";");
 				        }
 				        myWriter.close();
 						} catch (Exception e) {e.printStackTrace();}
