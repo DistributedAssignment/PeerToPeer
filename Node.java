@@ -127,10 +127,10 @@ public class Node {
 		String everything = null;
 		int com = -1;
 		try {
-		String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
-		"I:\\git\\PeerToPeer\\import.bat"};
-		File workDir = new File( "I:\\git\\PeerToPeer");
-		Process process = Runtime.getRuntime().exec( commands, null, workDir);
+			ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "Import.bat");
+			File dir = new File("I:\\git\\PeerToPeer");
+			pb.directory(dir);
+			Process p = pb.start();
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
 		StringBuilder sb = new StringBuilder();
@@ -254,10 +254,10 @@ public class Node {
 			} catch (Exception e) {e.printStackTrace();}
 			//Commits this to the git repository
 			try {
-				String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
-				"I:\\git\\PeerToPeer\\import.bat"};
-				File workDir = new File( "I:\\git\\PeerToPeer");
-				Process process = Runtime.getRuntime().exec( commands, null, workDir);
+				ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "Commit.bat");
+				File dir = new File("I:\\git\\PeerToPeer");
+				pb.directory(dir);
+				Process p = pb.start();
 			} catch (Exception e) {e.printStackTrace();}
 			/***THE NETWORK NOW EXISTS***/
 			}
@@ -408,10 +408,10 @@ public class Node {
 					
 					//Commits this to the git repository
 					try {
-						String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
-						"I:\\git\\PeerToPeer\\import.bat"};
-						File workDir = new File( "I:\\git\\PeerToPeer\\");
-						Process process = Runtime.getRuntime().exec( commands, null, workDir);
+						ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "Commit.bat");
+						File dir = new File("I:\\git\\PeerToPeer");
+						pb.directory(dir);
+						Process p = pb.start();
 					} catch (Exception e) {e.printStackTrace();}
 				} 
 			
@@ -549,10 +549,10 @@ public class Node {
  							
 
 						try {
-							String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
-							"I:\\git\\PeerToPeer\\import.bat"};
-							File workDir = new File( "I:\\git\\PeerToPeer");
-							Process process = Runtime.getRuntime().exec( commands, null, workDir);
+							ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "Commit.bat");
+							File dir = new File("I:\\git\\PeerToPeer");
+							pb.directory(dir);
+							Process p = pb.start();
 						} catch (Exception e) {e.printStackTrace();
  							
  							}
