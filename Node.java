@@ -36,7 +36,7 @@ public class Node {
  	static String[] ip_list = new String[2048];
  	static int[] port_list = new int[2048];
  	static String[] name_list = new String[2048];
- 	static int[] index_list = new String[2048];
+ 	static int[] index_list = new int[2048];
  	//The information about the node
  	static int port = 1;
  	static String ip_str = getLocalAddress();
@@ -202,7 +202,7 @@ public class Node {
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
 		try {
-			up_data = ("NewI;"+port+";"+ip_str+";"+name+";"+index).getBytes();
+			up_data = ("NewI;"+port+";"+ip_str+";"+name+";"+inds).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_r.send(packet);
 			packet = null;
@@ -349,7 +349,7 @@ public class Node {
 	 					synchronized(IP_list) {try {IP_list[n] = null;
 	 					} catch (Exception e) {}}
 	 					synchronized(name_list) {name_list[n] =null;}
-	 					synchronized(index_list) {index_list[n] =null;}
+	 					synchronized(index_list) {index_list[n] =-1;}
 		 			
 					
 		 			
