@@ -710,6 +710,7 @@ public class Node {
  	 	    		
  				number = 0;
  				//Any changes made in this menu is updated here on the network
+ 				System.out.println(change_index);
  		    	if (change_index!=-1) {
  		    		int[] u = new int[2];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
@@ -859,24 +860,22 @@ public class Node {
  			System.out.println("Account number: " + ind);
  	    }
  	 
- 	    private static boolean closeData(String account)  {
+ 	    private static void closeData(String account)  {
  			try {if (account_index[Integer.parseInt(account)]!= -1) {
  			System.out.println("--------------------------");
  				account_index[Integer.parseInt(account)] = -1;
  				account_list[Integer.parseInt(account)] = 0;
  				change_index = account_index[Integer.parseInt(account)];
- 				return true;
+
  			} else {
  				System.out.println("No account found");
  				System.out.println("--------------------------");
  				System.out.println("");
  				change_index = -1;
- 				return false;
  			}
  			} catch (Exception e) {
  				System.out.println("Invalid input");
  				change_index = -1;
- 				return false;
  			}
  	    }
  	    
