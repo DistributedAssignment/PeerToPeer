@@ -863,9 +863,9 @@ public class Node {
  	    private static void closeData(String account)  {
  			try {if (account_index[Integer.parseInt(account)]!= -1) {
  			System.out.println("--------------------------");
+				change_index = account_index[Integer.parseInt(account)];
  				account_index[Integer.parseInt(account)] = -1;
  				account_list[Integer.parseInt(account)] = 0;
- 				change_index = account_index[Integer.parseInt(account)];
 
  			} else {
  				System.out.println("No account found");
