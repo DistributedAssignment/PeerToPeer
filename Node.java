@@ -26,11 +26,17 @@ public class Node {
 	//To make it easier to send data to News
 	static int[] account_index = new int[2048];
 	
-	//The scoket and packet for sending and receiving
+
+	//Used by the updater to send data to nodes
 	static DatagramSocket socket_s = null;
+	//Used by the receiver to get messages
 	static DatagramSocket socket_r = null;
+	//Used by the messenger to update nodes
 	static DatagramSocket socket_m = null;
+	//Used by the client to update nodes
 	static DatagramSocket socket_c = null;
+	//Used by the pinger to send data to its initial connection node
+	static DatagramSocket socket_p = null;
  	//The list of nodes on the network
  	static InetAddress[] IP_list = new InetAddress[2048];
  	static String[] ip_list = new String[2048];
@@ -43,6 +49,8 @@ public class Node {
  	static InetAddress ip;
  	static int data = 0;
  	static int inds = 0;
+ 	static int ping_port;
+ 	static InetAddress ping_IP;
 	//This is the index of a changed account
 	static int change_index = -1;
 	//For out putting information about what the node is doing in the background
@@ -55,11 +63,13 @@ public class Node {
  	public void create() {
 		Receiver r = new Receiver();
 		Client c = new Client();
+		Ping p = new Ping();
 		c.start();
 		r.start();
 		try{
 		c.join();
-		r.join();} catch (Exception e) {}
+		r.join();
+		} catch (Exception e) {}
  	}
  	
  	public static void main(String args[]) {
@@ -93,6 +103,15 @@ public class Node {
 	    	try {
 	    		setup = true;
 	    		socket_c = new DatagramSocket(port,ip);
+			} catch (SocketException e) {
+				setup = false;
+				port +=1;
+			}
+	    }	    setup= false;
+		while (setup == false) {
+	    	try {
+	    		setup = true;
+	    		socket_p = new DatagramSocket(port,ip);
 			} catch (SocketException e) {
 				setup = false;
 				port +=1;
@@ -186,6 +205,7 @@ public class Node {
 						port_list[i] = port;
 						name_list[i] = name;
 						inds = i;
+						
 						break;
 						
 					}
@@ -200,6 +220,7 @@ public class Node {
 		 */
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
+		ping_IP = IP_list[com];
 		try {
 			up_data = ("NewI;"+port+";"+ip_str+";"+name+";"+inds).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
@@ -219,8 +240,11 @@ public class Node {
 		//The account data is constructeds
 		String temp = new String(re_data);
 		temp = temp.trim();
+		data_arr = temp.split(":");
+		String ping_temp = data_arr[1];
+		int ping_port = Integer.parseInt(ping_temp);
 		if (temp.length()>2) {
-			String[] account_arr = temp.split(";");
+			String[] account_arr =data_arr[0].split(";");
 			for (int i = 0; i<account_arr.length; i++) {
 				String[] a= account_arr[i].split(",");
 				int b = Integer.parseInt(a[0].trim());
@@ -287,7 +311,7 @@ public class Node {
 			
 	private class Updater extends Thread{
 		
-		int[] update;
+		private int[] update;
 		public Updater(int[] u) {
 			this.update = new int [3];
 			update[0] = u[0];
@@ -326,7 +350,7 @@ public class Node {
 	}
 	
 	private class Messenger extends Thread{
-		String[] message;
+		private String[] message;
 		public Messenger(String[] ms) {
 			this.message = new String[ms.length];
 			for (int i = 0; i<ms.length; i++) {
@@ -384,20 +408,17 @@ public class Node {
 						}
 						
 						//Updates its node list
-						int k = 0;
-			 			for (int i = 0; i<ip_list.length; i++) {
-			 				if (ip_list[i]==null) {
-			 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
-			 					synchronized(ip_list) {ip_list[i] = message[2].trim();}	
-			 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
-			 					} catch (Exception e) {e.printStackTrace();}}
-			 					synchronized(name_list) {name_list[i] = message[3].trim();	}
-			 					k = i;
-			 					break;
-			 				}
-			 			}
+						int n =Integer.parseInt(message[4].trim());
+	 					synchronized(port_list) {port_list[n] = Integer.parseInt(message[1].trim());}
+	 					synchronized(ip_list) {ip_list[n] = message[2].trim();	}
+	 					synchronized(IP_list) {try {IP_list[n] = InetAddress.getByName(message[2].trim());
+	 					} catch (Exception e) {}}
+	 					synchronized(name_list) {name_list[n] = message[3].trim();	}
+	 					synchronized(index_list) {index_list[n] = n;	}
 			 			
-
+	 					//Creates a listener for the node
+	 					Listener l = new Listener(n);
+	 					l.start();
 			 			
 				String account_dat = "";
 				   for (int i = 0; i<2048; i++) {
@@ -405,6 +426,7 @@ public class Node {
 				        	account_dat = account_dat +(account_list[i]+","+account_index[i]+";").trim();
 				        }
 				     }
+				   account_data = account_data + ":" + l.getPort();
 				   data_node = account_dat.getBytes();
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
@@ -478,8 +500,169 @@ public class Node {
 		}
 	}
 	
- 	//What the client sees
- 	private class Client extends Thread{
+	private class Listen() extends Thread{
+		
+		DatagramSocket socket_t;
+		DatagramSocket socket_l;
+		byte[] listen;
+		int index;
+		int port_l = 0;
+		public Listern(int index) {
+			//initialises the socket which will updates the nodes on the network
+			boolean setup = false;
+			while (setup == false) {
+		    	try {
+		    		setup = true;
+		    		this.socket_t = new DatagramSocket(port,ip);
+				} catch (SocketException e) {
+					setup = false;
+					this.port_l +=1;
+				}
+		    }
+			//initialises the socket which will listen for pings
+			setup = false;
+			while (setup == false) {
+		    	try {
+		    		setup = true;
+		    		this.socket_l = new DatagramSocket(port,ip);
+				} catch (SocketException e) {
+					setup = false;
+					this.port_l +=1;
+				}
+		    }
+			this.index = index;
+		}
+		
+		public void run() {
+			boolean ping = true;
+			while (ping) {
+			listen = new byte[65536];
+			Timer t = new Timer();
+			t.start();
+			socket_l.receive(listen, listen.length);
+			String s = new String(listen)
+			if ((s.trim()).equals("End")) {
+				ping = false;
+			} 
+			t.interrupt();
+			listen = null;
+			}
+			}
+	
+		public void getPort() {
+			return port_l;
+		}
+		
+	}
+	
+	private class Timer extends Thread{
+		long wait;
+		long start_time;
+		int index_l;
+		public Timer(int i) {
+			this.index_l = i;
+			this.start_time = System.currentTimeMillis();
+			this.wait = 25;
+		}
+		
+		public void run() {	
+		byte[] disl;
+		while(true) {
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			long end_time = System.currentTimeMillis();
+			long time =(end_time - start_time)/1000;
+			
+			if (time >= wait) {	
+				//Notifys the listener
+				String temp_data = "End";
+				disl = temp_data.getBytes();
+				DatagramPacket packet = new DatagramPacket(disl, disl.length,IP_list[inds],port_l);
+				try{socket_t.send(packet);
+				}catch (Exception e) {}	
+				packet = null;
+				
+				//The times has now run out and the timer will now disconnect the node
+				String temp_data = "Disconnect;"+index;
+				disl = temp_data.getBytes();
+				for (int i =0;i<IP_list.length;i++) {
+					if (port_list[i] != -1) {
+						DatagramPacket packet = new DatagramPacket(disl, disl.length,IP_list[i],port_list[i]);
+						try{socket_t.send(packet);
+						}catch (Exception e) {}	
+						packet = null;
+					}
+				}
+				
+				synchronized (port_list) {port_list[index]=-1; }
+				synchronized(ip_list)  {ip_list[index]=null; }
+				synchronized(IP_list)  {IP_list[index]=null; }
+				synchronized(name_list)  {name_list[index]=null; }
+				synchronized(index_list)  {index_list[index]=-1; }	
+			//Reconstructs data
+			try {
+	        FileWriter myWriter = new FileWriter("Data.txt");
+	        for (int j = 0; j<2048; j++) {
+	        	myWriter.write(port_list[j]+";");
+	        }
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	if (ip_list.equals(null)) {myWriter.write("null;");  	
+	        	} else {myWriter.write(ip_list[j]+";");}
+	        }
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	if (name_list.equals(null)) {myWriter.write("null;");  	
+	        	} else {myWriter.write(name_list[j]+";");}
+	        }			
+	        myWriter.write("\n");
+	        for (int j = 0; j<2048; j++) {
+	        	myWriter.write(index_list[j]+";");
+	        }
+	        myWriter.close();
+			} catch (Exception e) {e.printStackTrace();}
+					
+
+			try {
+				ProcessBuilder pb = new ProcessBuilder("cmd", "/c", "Commit.bat");
+				File dir = new File("I:\\git\\PeerToPeer");
+				pb.directory(dir);
+				Process p = pb.start();
+			} catch (Exception e) {e.printStackTrace();
+			}
+		}
+	}
+			}
+		
+	}
+ 	
+	private class Ping() extends Thread {
+		private static int li_port;
+		private static InetAddress li_IP;
+		public Ping(int a, InetAddress b) {
+			li_port = a;
+			li_IP = b;
+		}
+		
+		public void run() {
+			while (true) {
+				Thread.sleep(500);
+				//Sends a ping to its assigned node
+				String temp_data = "Ping";
+				dis = temp_data.getBytes();
+				DatagramPacket packet = new DatagramPacket(dis, dis.length,li_port,li_IP);
+				try{socket_p.send(packet);
+				}catch (Exception e) {}	
+				packet = null;
+			}
+		}
+	}
+	
+	//What the client sees
+  	private class Client extends Thread{
  		//Request list same as the server except for create as this is for managing a specified account, also no disconnect for similar reasons
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
@@ -489,6 +672,9 @@ public class Node {
  		}
  		
  		public void run() {	
+ 			//Starts the ping here so that is can be stopped when the client disconnects
+ 			Ping ping = new Ping(ping_port,ping_IP);
+ 			ping.start();
  			/**Set everything up**/
  			Scanner myObj = new Scanner(System.in);
  	    	myObj.useDelimiter(System.lineSeparator());
@@ -594,6 +780,10 @@ public class Node {
 						} catch (Exception e) {e.printStackTrace();
  							
  							}
+						
+						try {ping.interrupt();
+						} catch (Exception e) {}
+						
 						b =false;
 						online = false;
  					    break;
