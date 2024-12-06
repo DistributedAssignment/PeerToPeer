@@ -129,7 +129,7 @@ public class Node {
 		try {
 		String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
 		"I:\\git\\PeerToPeer\\import.bat"};
-		File workDir = new File( "I:\\git\\PeerToPeer\\");
+		File workDir = new File( "I:\\git\\PeerToPeer");
 		Process process = Runtime.getRuntime().exec( commands, null, workDir);
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
@@ -256,7 +256,7 @@ public class Node {
 			try {
 				String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
 				"I:\\git\\PeerToPeer\\import.bat"};
-				File workDir = new File( "I:\\git\\PeerToPeer\\");
+				File workDir = new File( "I:\\git\\PeerToPeer");
 				Process process = Runtime.getRuntime().exec( commands, null, workDir);
 			} catch (Exception e) {e.printStackTrace();}
 			/***THE NETWORK NOW EXISTS***/
@@ -549,7 +549,7 @@ public class Node {
 						try {
 							String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
 							"I:\\git\\PeerToPeer\\import.bat"};
-							File workDir = new File( "I:\\git\\PeerToPeer\\");
+							File workDir = new File( "I:\\git\\PeerToPeer");
 							Process process = Runtime.getRuntime().exec( commands, null, workDir);
 						} catch (Exception e) {e.printStackTrace();
  							
