@@ -478,7 +478,6 @@ public class Node {
 	
  	//What the client sees
  	private class Client extends Thread{
-		r.start();
  		//Request list same as the server except for create as this is for managing a specified account, also no disconnect for similar reasons
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
