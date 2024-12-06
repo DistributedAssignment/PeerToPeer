@@ -30,7 +30,7 @@ public class Node {
 	static DatagramSocket socket_s = null;
 	static DatagramSocket socket_r = null;
 	static DatagramSocket socket_m = null;
-	
+	static DatagramSocket socket_c = null;
  	//The list of nodes on the network
  	static InetAddress[] IP_list = new InetAddress[2048];
  	static String[] ip_list = new String[2048];
@@ -41,6 +41,7 @@ public class Node {
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
  	static int data = 0;
+ 	static int inds = 0;
 	//This is the index of a changed account
 	static int change_index = -1;
 	//For out putting information about what the node is doing in the background
@@ -62,9 +63,6 @@ public class Node {
  	}
  	
  	public static void main(String args[]) {
- 		PrintStream pbM = null;
- 	 	try {ip = InetAddress.getByName(ip_str);}
- 	 	catch (Exception e) {e.printStackTrace();}
  		System.out.println("Connecting... ");
  		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
@@ -90,7 +88,16 @@ public class Node {
 				port +=1;
 			}
 	    }
-		
+	    setup= false;
+		while (setup == false) {
+	    	try {
+	    		setup = true;
+	    		socket_c = new DatagramSocket(port,ip);
+			} catch (SocketException e) {
+				setup = false;
+				port +=1;
+			}
+	    }
 	    setup= false;
 		while (setup == false) {
 	    	try {
@@ -114,12 +121,7 @@ public class Node {
 			}
 	    }
 		name = "Node#network.."+ip_str+"#port.."+port;
-		System.out.println(port);
-	    try {
-	 		pbM = new PrintStream("Data\\Setup data "+port+".txt");
-	 		System.setErr(pbM);
-	    } catch (Exception e) {e.printStackTrace();}
-		System.err.println("Initalize");
+		System.out.println(name);
 		
 		//The account and port data is read from the repository
 		String everything = null;
@@ -129,7 +131,6 @@ public class Node {
 		"I:\\git\\PeerToPeer\\import.bat"};
 		File workDir = new File( "I:\\git\\PeerToPeer\\");
 		Process process = Runtime.getRuntime().exec( commands, null, workDir);
-		System.err.println("Import");
 		//Reads data
 		BufferedReader br = new BufferedReader(new FileReader("Data.txt"));
 		StringBuilder sb = new StringBuilder();
@@ -169,12 +170,10 @@ public class Node {
 			}
 			}
 		}
-		System.err.println("Processed data");
 		
 			/**HERE THE NODE CONNECTS TO THE NETWORK**/
 			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
 			if (com != -1) {
-				System.err.println("Joining Network");
 				//Adds it self to the node lists
 				
 				for (int i = 0; i<port_list.length;i++) {
@@ -183,6 +182,7 @@ public class Node {
 						ip_list[i] = ip_str;
 						port_list[i] = port;
 						name_list[i] = name;
+						inds = i;
 						break;
 						
 					}
@@ -209,17 +209,15 @@ public class Node {
 		try { socket_r.receive(packet);
 		} catch (Exception e) {e.printStackTrace();}		
 		packet = null;
-		System.err.println("Account data received");
 		//Now this node should tell all other nodes about this node and will then start to update the other nodes
 		//It should also send the account list to this node
 		
 		//The account data is constructeds
 		String temp = new String(re_data);
 		temp = temp.trim();
-		System.out.println(temp);
 		if (temp.length()>2) {
 			String[] account_arr = temp.split(";");
-			for (int i = 0; i<account.length; i++) {
+			for (int i = 0; i<account_arr.length; i++) {
 				String[] a= account_arr[i].split(",");
 				int b = Integer.parseInt(a[0].trim());
 				int in = Integer.parseInt(a[1].trim());
@@ -228,11 +226,9 @@ public class Node {
 			}
 			
 		}
-		System.err.println("Account data constructed");
 		/***THE NODE IS NOW ON THE NETWORK***/
 			}
 			 else {
-				System.err.println("Creating Network");
 				//Adds itself to the list
 				ip_list[0] = ip_str;
 				IP_list[0]= ip;
@@ -256,7 +252,6 @@ public class Node {
 	        }
 	        myWriter.close();
 			} catch (Exception e) {e.printStackTrace();}
-			System.err.println("Data Created");
 			//Commits this to the git repository
 			try {
 				String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
@@ -264,11 +259,8 @@ public class Node {
 				File workDir = new File( "I:\\git\\PeerToPeer\\");
 				Process process = Runtime.getRuntime().exec( commands, null, workDir);
 			} catch (Exception e) {e.printStackTrace();}
-			System.err.println("Data Commited");
-			System.err.println("Network Created");
 			/***THE NETWORK NOW EXISTS***/
 			}
-			pbM.close();
 			Node node = new Node();
 			node.create();
  	}
@@ -293,16 +285,9 @@ public class Node {
 			update[1] = u[1];
 		}
 		
-		public void run() {
-			PrintStream pbU = null;
-		    try {
-		 		pbU = new PrintStream("Data\\Updater data "+port+".txt");
-		 		System.setErr(pbU);
-		    } catch (Exception e) {e.printStackTrace();}
-		    
+		public void run() {		    
 			byte[] data = new byte[65536];
 			try {
-				System.err.println("U: Updating");
 				String temp_data = "Update;"+update[0]+";"+update[1];
 				data = temp_data.getBytes();
 				for (int i =0;i<IP_list.length;i++) {
@@ -312,8 +297,6 @@ public class Node {
 						packet = null;
 					}
 				}
-				System.err.println("U: Updated");
-				pbU.close();
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	}
@@ -327,21 +310,12 @@ public class Node {
 			}
 		}
 		
-		public void run() {
-			PrintStream pbMe = null;
-		    try {
-		 		pbMe = new PrintStream("Data\\Messenger data "+port+".txt");
-		 		System.setErr(pbMe);
-		    } catch (Exception e) {e.printStackTrace();}
-		    
+		public void run() { 
 			//For sending data too other nodes
 			byte[] data_node = null;		    
 			try {
 				//Gets the message and acts accordingly
-				System.err.println("M: Message received ");
-				System.err.print(message[0]+" "+message[1]+" " +message[2]);
 				if ((message[0].trim()).equals("Update")) {
-					System.err.println(message[0]+" "+message[1]+" " +message[2]);
 					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[1].trim());}
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
 				} else if ((message[0].trim()).equals("New")) {
@@ -358,14 +332,23 @@ public class Node {
 					
 		 			
 					//If this is the node with initial contact, all nodes are updated by it
+				} else if ((message[0].trim()).equals("Disconnect")) {
+					//Updates its node list
+					int n =Integer.parseInt(message[1].trim());
+		 			for (int i = 0; i<ip_list.length; i++) {
+		 				if (port_list[i]==n) {
+		 					synchronized(port_list) {port_list[i] = -1;}
+		 					synchronized(ip_list) {ip_list[i] = null;	}
+		 					synchronized(IP_list) {try {IP_list[i] = null;
+		 					} catch (Exception e) {}}
+		 					synchronized(ip_list) {name_list[i] =null;}
+		 				}
+		 			}
+					
+		 			
+					//If this is the node with initial contact, all nodes are updated by it
 				} else if ((message[0].trim()).equals("NewI")) {
-					PrintStream pbMe2 = null;
-				    try {
-				 		pbMe2 = new PrintStream("Data\\Messenger data initial "+port+".txt");
-				 		System.setErr(pbMe);
-				    } catch (Exception e) {e.printStackTrace();}
 						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim();
-						System.err.println(temp);
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
@@ -388,6 +371,7 @@ public class Node {
 			 					break;
 			 				}
 			 			}
+			 			
 			 		
 			 			
 				String account_dat = "";
@@ -396,7 +380,6 @@ public class Node {
 				        	account_dat = account_dat +(account_list[i]+","+account_index[i]+";").trim();
 				        }
 				     }
-				   System.out.println(account_dat);
 				   data_node = account_dat.getBytes();
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
@@ -428,10 +411,7 @@ public class Node {
 						File workDir = new File( "I:\\git\\PeerToPeer\\");
 						Process process = Runtime.getRuntime().exec( commands, null, workDir);
 					} catch (Exception e) {e.printStackTrace();}
-				pbMe2.close();
 				} 
-				System.err.println("M complete");
-				pbMe.close();
 			
 			} catch (Exception e) {e.printStackTrace();}
 		}
@@ -443,11 +423,7 @@ public class Node {
 		}
 		
 		public void run() {
-			PrintStream pbR = null;
-		    try {
-		 		pbR = new PrintStream("Data\\Receiver data "+port+".txt");
-		 		System.setErr(pbR);
-		    } catch (Exception e) {e.printStackTrace();}
+
 		    
 			byte[] receive = new byte[65536];
 			while (true) { 
@@ -458,13 +434,10 @@ public class Node {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				System.err.println("R: Received");
 				String[] message;	
 				String temp = new String(receive);
-				System.err.println("R: "+temp);
 				message = temp.split(";");
 				(new Messenger(message)).start();
-				System.err.println("R: Created messenger");
 				packet =null;
 			}
 		}
@@ -475,33 +448,37 @@ public class Node {
  		//Request list same as the server except for create as this is for managing a specified account, also no disconnect for similar reasons
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
- 		private static Scanner myObj = new Scanner(System.in);
+ 		
 
  		public Client() {
  		}
  		
  		public void run() {	
-		    try {
-		 		PrintStream pbC = new PrintStream("Data\\Client data "+port+".txt");
-		 		System.setErr(pbC);
-		    } catch (Exception e) {e.printStackTrace();}
- 			System.err.println("C: Started");
+ 			/**Set everything up**/
+ 			Scanner myObj = new Scanner(System.in);
+ 	    	myObj.useDelimiter(System.lineSeparator());
+	 	    boolean b = false;
+	 		int money = 0;
+	 		String money_str = null;
  			
- 			/**NOW THE CLIENT CAN INTERACT WITH THE LOCAL DATA**/
- 			while (true) {
- 				System.err.println("C: Creation finished");
+ 			/**NOW THE CLIENT CAN INTERACT WITH THE DATA**/
+ 			/**The menu which the user sees after loading the program**/
+	 		boolean online = true;
+ 			while (online) {
  				String in = "";
  				int number;
+ 				//Outputs the menu
  				System.out.println("Please press: ");
  		    	for (int i=0; i<MENU_LIST.length; i++) {
  		    		int n = i+1;
  		    		System.out.println(n+": "+MENU_LIST[i]);
  		    		
  		    	}
+ 		    	//Takes input
  		    	System.out.print("Input: ");
  		    	try { 
  		    	boolean input =false;
- 		    	in = myObj.nextLine();
+ 		    	in = myObj.next();
  		    	in.trim();
  		    	number = Integer.parseInt(in);
  				}
@@ -510,36 +487,82 @@ public class Node {
  				}
  		    	//The account number
  				String account = "";
+ 				//b decides if its appropiate to show the managment menu
  				switch(number) {
  				  case 1:
  				    createAccount();
+ 				    b = false;
  				    break;
  				  case 2:
- 					try {
+ 					//Takes the input
  			    	System.out.print("Account number: ");
  	 		    	boolean input =false;
- 	 		    	while (!input) {
- 	 		    		try {
- 	 		    			account = myObj.nextLine();
- 	 		    			input = true;
- 	 		    		} catch (Exception e) {
- 	 		    			input= false;
- 	 		    		}
- 	 		    	}
+ 		    		try {
+ 		    			account = myObj.next();
+ 		    		} catch (Exception e) {
+ 		    		}
+ 	 		    	
  			    	account.trim();  
- 					} catch (Exception e) {
- 						account = "0";
- 					}
+
  				    if (retrieveData(account)) {
- 				    	while (accountManagement(account));
+ 				    	b = true;
  				    }
  				   break;
  				  case 3:
+ 						byte[] dis;
+ 						String temp_data = "Disconnect;"+port;
+ 						dis = temp_data.getBytes();
+ 						for (int i =0;i<IP_list.length;i++) {
+ 							if (port_list[i] != -1) {
+ 								DatagramPacket packet = new DatagramPacket(dis, dis.length,IP_list[i],port_list[i]);
+ 								try{socket_c.send(packet);
+ 								}catch (Exception e) {}	
+ 								packet = null;
+ 							}
+ 						}
+ 						
+ 						synchronized (port_list) {port_list[inds]=-1; }
+ 						synchronized(ip_list)  {ip_list[inds]=null; }
+ 						synchronized(IP_list)  {IP_list[inds]=null; }
+ 						synchronized(name_list)  {name_list[inds]=null; }
+ 	 						
+						//Reconstructs data
+						try {
+				        FileWriter myWriter = new FileWriter("Data.txt");
+				        for (int j = 0; j<2048; j++) {
+				        	myWriter.write(port_list[j]+";");
+				        }
+				        myWriter.write("\n");
+				        for (int j = 0; j<2048; j++) {
+				        	if (ip_list.equals(null)) {myWriter.write("null;");  	
+				        	} else {myWriter.write(ip_list[j]+";");}
+				        }
+				        myWriter.write("\n");
+				        for (int j = 0; j<2048; j++) {
+				        	if (name_list.equals(null)) {myWriter.write("null;");  	
+				        	} else {myWriter.write(name_list[j]+";");}
+				        }
+				        myWriter.close();
+						} catch (Exception e) {e.printStackTrace();}
+ 							
+
+						try {
+							String[] commands = {"C:\\Windows\\System32\\cmd.exe", "/c", 
+							"I:\\git\\PeerToPeer\\import.bat"};
+							File workDir = new File( "I:\\git\\PeerToPeer\\");
+							Process process = Runtime.getRuntime().exec( commands, null, workDir);
+						} catch (Exception e) {e.printStackTrace();
+ 							
+ 							}
+						b =false;
+						online = false;
  					    break;
  				  default:
- 		  		  System.out.println("Invalid request");
- 		  		  break;
+ 					  System.out.println("Invalid input");
+ 					  b = false;
+ 					  break;
  				}
+ 				//If any changes were made in this menu they are updated here
  				number = 0;
  		    	if (change_index!=-1) {
  		    		int[] u = new int[2];
@@ -548,10 +571,148 @@ public class Node {
  		    		(new Updater(u)).start();
  		    		change_index = -1;
  		    	}
+		    	
+ 				while (b) {
+ 	 	    	number = 0;
+ 	 	    	String choice = "";
+ 	 	    	System.out.println("Account "+account);
+ 	 	    	System.out.println("Please press: ");
+ 	 	    	for (int i=0; i<REQUEST_LIST.length; i++) {
+ 	 	    		int n = i+1;
+ 	 	    		System.out.println(n+": "+REQUEST_LIST[i]);
+ 	 	    		
+ 	 	    	}
+ 	 			try {
+ 	 		    	
+	    			System.out.print("Input: ");
+	    			choice = myObj.next();
+ 	 		    	
+ 	 		    	choice.trim();
+ 	 		    	number = Integer.parseInt(choice);
+ 	 				}
+ 	 				catch(Exception e) {
+ 	 				  number = 0;
+ 	 				}
+ 	 	    	switch(number) {
+ 	 	    	  case 1:
+ 	 	    		b = retrieveData(account);
+ 	 	    		b = true;
+ 	 	    		break;
+ 	 	    	  case 2:
+ 	 	 		 	
+ 	 	 		 	//Here the user is asked to input there desired withdraw
+	 	 			try {
+	 	 				System.out.print("How much would you like to withdraw: ");
+	 			    	money_str = myObj.next();
+	 			    	money_str.trim();
+	 			    	money= Integer.parseInt(money_str);
+ 	 	 			}
+ 	 	 			catch(Exception e) {
+ 	 	 				money = -1;
+ 	 	 				money_str = "-1";
+ 	 	 			}
+ 	 	 			
+ 	 	    		int w  = withdraw(account,money);
+ 	 	    		
+ 	 	 			
+ 	 	 			System.out.println("--------------------------");
+ 	 	 			if (w == -3) {
+ 	 	 				System.out.println("Insuffcient funds");
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = -1;
+ 	 	 				
+ 	 	 			} else if (w == -1) {
+ 	 	 				System.out.println("Inavlid input");
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = -1;
+ 	 	 			}else if (w == -2) {
+ 	 	 				System.out.println("Account no longer exists");
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = -1;
+ 	 	 			}else {
+ 	 	 				System.out.println("Account balance: " + account_list[Integer.parseInt(account)] );
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = Integer.parseInt(account);
+ 	 	 			}
+ 	 	 			
+ 	 	    		b = true;
+ 	 	    		break;
+ 	 	    	  case 3:
+ 	 	 		 	
+ 	 	 		 	//Here the user is asked to input there desired withdraw
+ 	 	 			try {
+	 	 	 	    	System.out.print("How much would you like to deposit: ");
+	 	 			    money_str = myObj.next();
+	 	 	 	    	money_str.trim();
+	 	 	 	    	money= Integer.parseInt(money_str);
+ 	 	 			}
+ 	 	 			catch(Exception e) {
+ 	 	 			 money = -1;
+ 	 	 			 money_str = "-1";
+ 	 	 			}
+ 	 	 			
+ 	 	 			
+ 	 	    		int d = deposit(account,money);
+ 	 	    		
+ 	 	 			System.out.println("");
+ 	 	 			System.out.println("--------------------------");
+ 	 	 			if (d == -1) {
+ 	 	 				System.out.println("Invalid Input");
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = -1;
+ 	 	 			}else if (d == -2) {
+ 	 	 				System.out.println("Account does not exist");
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = -1;
+ 	 	 				
+ 	 	 			} else {
+ 	 	 				System.out.println("Account balance: " + account_list[Integer.parseInt(account)]);
+ 	 	 				System.out.println("--------------------------");
+ 	 	 				System.out.println("");
+ 	 	 				change_index = Integer.parseInt(account);
+ 	 	 			}
+ 	 	 			
+ 	 	    		b = true;
+ 	 	    		break;
+ 	 	    	  case 4:
+ 	 	      		closeData(account);
+ 	 	      		b = false;
+ 	 	      		break;
+ 	 	    	  case 5:
+ 	 	    		  b = false;
+ 	 	    		  break;
+ 	 	    	  default:
+ 	 	    		  System.out.println("Invalid request");
+ 	 	    		  b = true;
+ 	 	    		  break;
+ 	 	    	}
+ 	 	    		
+ 				number = 0;
+ 				//Any changes made in this menu is updated here on the network
+ 		    	if (change_index!=-1) {
+ 		    		int[] u = new int[2];
+ 		    		synchronized(account_list) { u[0] = account_list[change_index];}
+ 		    		synchronized(account_index) { u[1] = account_index[change_index];}
+ 		    		(new Updater(u)).start();
+ 		    		change_index = -1;
+ 		    	}
+ 		    	
+ 				}
+ 				
+
+ 		    	
  				}
  		}
- 		private synchronized boolean accountManagement(String account) {
- 	    	Scanner myObj = new Scanner(System.in);
+ 		
+ 		/*private static boolean accountManagement(String account) {
+ 			Scanner myObj = new Scanner(System.in);
+ 	    	myObj.useDelimiter(System.lineSeparator());
  	    	int number = 0;
  	    	String choice = "";
  	    	System.out.println("Account "+account);
@@ -567,7 +728,7 @@ public class Node {
  		    	while (!input) {
  		    		try {
  		    			System.out.print("Input: ");
- 		    			choice = myObj.nextLine();
+ 		    			choice = myObj.next();
  		    			input = true;
  		    		} catch (Exception e) {
  		    			input= false;
@@ -598,21 +759,11 @@ public class Node {
  	    	  default:
  	    		  System.out.println("Invalid request");
  	    		  b = false;
- 	    	}
- 	    	
- 	    	if (change_index!=-1) {
-	    		int[] u = new int[2];
-	    		synchronized(account_list) {u[0] = account_list[change_index];}
-	    		synchronized(account_index) {u[1] = account_index[change_index];}
-	    		(new Updater(u)).start();
- 	    		change_index = -1;
- 	    	}
- 	    	
+ 	    	} 	    	
  	    	return b;
  	    }
- 		
+ 		*/
  		private static boolean retrieveData(String account)  {
- 			System.out.println(account_index[Integer.parseInt(account)]);
  			try {if (account_index[Integer.parseInt(account.trim())]!= -1) {
  			System.out.println("--------------------------");
 
@@ -636,32 +787,7 @@ public class Node {
  			}
  	    }
  	        
- 	    private static  void withdraw(String account)  {
- 		 	boolean withdraw = false;
- 		 	int money = 0;
- 		 	String money_str = null;
- 		 	while (!(withdraw)) {
- 		 	
- 		 	//Here the user is asked to input there desired withdraw
- 			try {
- 	    	System.out.print("How much would you like to withdraw: ");
-		    	boolean input =false;
-		    	while (!input) {
-		    		try {
-		    			money_str = myObj.nextLine();
-		    			input = true;
-		    		} catch (Exception e) {
-		    			input= false;
-		    		}
-		    	}
- 	    	money_str.trim();
- 	    	money= Integer.parseInt(account);
- 			}
- 			catch(Exception NumberFormatException) {
- 			 money = -1;
- 			 money_str = "-1";
- 			}
- 			
+ 		private static int withdraw(String account, int money)  {			
  			int balance = -1000;
  			if (account_index[Integer.parseInt(account)]==-1) {
  				try { balance = -2;
@@ -669,65 +795,23 @@ public class Node {
  					balance = -1;
  				}
  		 	} else {
- 		 		if (0<=account_list[Integer.parseInt(account)] - money) {
- 		 		account_list[Integer.parseInt(account)] -= money;} else {
+ 		 		int temp = account_list[Integer.parseInt(account)];
+ 		 		synchronized (account_list) {if (0<=temp - money) {
+ 		 		temp -= money;
+ 		 		balance = temp;
+ 		 		account_list[Integer.parseInt(account)] = temp;} else {
+ 		 		
+ 		 		
  		 			balance = -3;
- 		 		}
+ 		 		}}
  		 	}
 
- 			
- 			System.out.println("--------------------------");
- 			if (balance == -3) {
- 				System.out.println("Insuffcient funds");
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = -1;
- 				
- 			} else if (balance == -1) {
- 				System.out.println("Inavlid input");
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = -1;
- 			}else if (balance == -2) {
- 				System.out.println("Account no longer exists");
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = -1;
- 			}else {
- 				System.out.println("Account balance: " + balance);
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = Integer.parseInt(account);
- 			}
- 		 	}
+ 			return balance;
+ 		 	
  	 }
  	 
- 	    private static  void deposit(String account)  {
- 		 	boolean deposit =  false;
- 		 	int money = 0;
- 		 	String money_str = null;
- 		 	while (!(deposit)) {
- 		 	
- 		 	//Here the user is asked to input there desired withdraw
- 			try {
- 	    	System.out.print("How much would you like to deposit: ");
-		    	boolean input =false;
-		    	while (!input) {
-		    		try {
-		    			money_str = myObj.nextLine();
-		    			input = true;
-		    		} catch (Exception e) {
-		    			input= false;
-		    		}
-		    	}
- 	    	money_str.trim();
- 	    	money= Integer.parseInt(account);
- 			}
- 			catch(Exception NumberFormatException) {
- 			 money = -1;
- 			 money_str = "-1";
- 			}
- 			
+ 	    private static  int deposit(String account, int money)  {
+
  			
  			int balance = -1000;
  			if (account_index[Integer.parseInt(account)]==-1) {
@@ -735,59 +819,17 @@ public class Node {
  				} catch (Exception e) {
  					balance = -1;
  				}
- 		 	} else {account_list[Integer.parseInt(account)] += money;}
+ 		 	} else {synchronized (account_list) { int temp = account_list[Integer.parseInt(account)];
+ 		 			temp += money;
+ 		 			balance = temp;
+ 		 			account_list[Integer.parseInt(account)] = temp;}}
  			
- 			System.out.println("");
- 			System.out.println("--------------------------");
- 			if (balance == -1) {
- 				System.out.println("Invalid Input");
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = -1;
- 			}else if (balance == -2) {
- 				System.out.println("Account does not exist");
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = -1;
- 				
- 			} else {
- 				System.out.println("Account balanc: " + balance);
- 				System.out.println("--------------------------");
- 				System.out.println("");
- 				change_index = Integer.parseInt(account);
- 			}
- 		 	}
+ 			return balance;		 	
  	 }
 
  	    private static void createAccount()  {
- 	        Scanner myObj = new Scanner(System.in);
  			boolean create = false;
- 			int overdraft = 0;
- 			/*while (!create) {
- 				String overdraft_str = null;
- 		    	System.out.print("Please input your desired overdraft limit (0-1500): ");
- 				try {
- 	 		    	boolean input =false;
- 	 		    	while (!input) {
- 	 		    		try {
- 	 		    			overdraft_str = inputs();
- 	 		    			input = true;
- 	 		    		} catch (Exception e) {
- 	 		    			input= false;
- 	 		    		}
- 	 		    	}
- 			    	overdraft_str.trim();
- 			    	overdraft = Integer.parseInt(overdraft_str);
- 		
- 					if (overdraft >= 0 && overdraft <= 1500) {
- 						create = true;
- 					}
- 					}
- 					catch(Exception NumberFormatException) {
- 					System.out.println("Not a number"); 
- 					}
- 			}*/
- 			
+			
  			//Finds a missing spot
  			int ind = -1;
  			for (int i = 0; i<account_index.length; i++) {
