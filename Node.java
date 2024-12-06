@@ -336,7 +336,7 @@ public class Node {
 	 					synchronized(IP_list) {try {IP_list[n] = InetAddress.getByName(message[2].trim());
 	 					} catch (Exception e) {}}
 	 					synchronized(name_list) {name_list[n] = message[3].trim();	}
-	 					synchronized(index_list) {index list[n] = n;	}
+	 					synchronized(index_list) {index_list[n] = n;	}
 		 			
 		 		
 		 			
