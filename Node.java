@@ -290,24 +290,39 @@ public class Node {
 		
 		int[] update;
 		public Updater(int[] u) {
-			this.update = new int [2];
+			this.update = new int [3];
 			update[0] = u[0];
 			update[1] = u[1];
+			update[2] = u[2];
 		}
 		
 		public void run() {		    
 			byte[] data = new byte[65536];
-			try {
-				String temp_data = "Update;"+update[0]+";"+update[1];
-				data = temp_data.getBytes();
-				for (int i =0;i<IP_list.length;i++) {
-					if (port_list[i] != -1) {
-						DatagramPacket packet = new DatagramPacket(data, data.length,IP_list[i],port_list[i]);
-						socket_s.send(packet);
-						packet = null;
+			if (update[1]!= -1) {
+				try {
+					String temp_data = "Update;"+update[0]+";"+update[1];
+					data = temp_data.getBytes();
+					for (int i =0;i<IP_list.length;i++) {
+						if (port_list[i] != -1) {
+							DatagramPacket packet = new DatagramPacket(data, data.length,IP_list[i],port_list[i]);
+							socket_s.send(packet);
+							packet = null;
+						}
 					}
-				}
-			} catch (Exception e) {e.printStackTrace();}
+				} catch (Exception e) {e.printStackTrace();}
+			} else {
+				try {
+					String temp_data = "Close;"+update[0]+";"+update[2];
+					data = temp_data.getBytes();
+					for (int i =0;i<IP_list.length;i++) {
+						if (port_list[i] != -1) {
+							DatagramPacket packet = new DatagramPacket(data, data.length,IP_list[i],port_list[i]);
+							socket_s.send(packet);
+							packet = null;
+						}
+					}
+				} catch (Exception e) {e.printStackTrace();}
+			}
 		}
 	}
 	
@@ -328,7 +343,11 @@ public class Node {
 				if ((message[0].trim()).equals("Update")) {
 					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[1].trim());}
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
-				} else if ((message[0].trim()).equals("New")) {
+				} if ((message[0].trim()).equals("Close")) {
+					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = 0;}
+					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = -1;}
+				}
+				else if ((message[0].trim()).equals("New")) {
 					//Updates its node list
 					int n =Integer.parseInt(message[4].trim());
 	 					synchronized(port_list) {port_list[n] = Integer.parseInt(message[1].trim());}
@@ -580,9 +599,10 @@ public class Node {
  				//If any changes were made in this menu they are updated here
  				number = 0;
  		    	if (change_index!=-1) {
- 		    		int[] u = new int[2];
+ 		    		int[] u = new int[3];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
  		    		synchronized(account_index) { u[1] = account_index[change_index];}
+ 		    		u[2] = change_index;
  		    		(new Updater(u)).start();
  		    		change_index = -1;
  		    	}
@@ -715,6 +735,7 @@ public class Node {
  		    		int[] u = new int[2];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
  		    		synchronized(account_index) { u[1] = account_index[change_index];}
+ 		    		u[2] = change_index;
  		    		(new Updater(u)).start();
  		    		change_index = -1;
  		    	}
