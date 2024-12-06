@@ -320,13 +320,15 @@ public class Node {
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
 				} else if ((message[0].trim()).equals("New")) {
 					//Updates its node list
+					int n =Integer.parseInt(message[1].trim());
 		 			for (int i = 0; i<ip_list.length; i++) {
-		 				if (port_list[i]==-1) {
+		 				if (port_list[i]==n) {
 		 					synchronized(port_list) {port_list[i] = Integer.parseInt(message[1].trim());}
 		 					synchronized(ip_list) {ip_list[i] = message[2].trim();	}
 		 					synchronized(IP_list) {try {IP_list[i] = InetAddress.getByName(message[2].trim());
 		 					} catch (Exception e) {}}
 		 					synchronized(ip_list) {name_list[i] = message[3].trim();	}
+		 					break;
 		 				}
 		 			}
 					
@@ -372,7 +374,7 @@ public class Node {
 			 				}
 			 			}
 			 			
-			 		
+
 			 			
 				String account_dat = "";
 				   for (int i = 0; i<2048; i++) {
