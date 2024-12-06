@@ -55,7 +55,6 @@ public class Node {
  	public void create() {
 		Receiver r = new Receiver();
 		Client c = new Client();
-		c.setDaemon(true);
 		c.start();
 		r.start();
 		try{
@@ -469,12 +468,17 @@ public class Node {
 				message = temp.split(";");
 				(new Messenger(message)).start();
 				packet =null;
+				//This is the message that the receiver will get after the client object has stopped 
+				if (temp="Disconnect;"+inds;) {
+					break;
+				}
 			}
 		}
 	}
 	
  	//What the client sees
  	private class Client extends Thread{
+		r.start();
  		//Request list same as the server except for create as this is for managing a specified account, also no disconnect for similar reasons
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
@@ -540,6 +544,7 @@ public class Node {
  				   break;
  				  case 3:
  						byte[] dis;
+ 						System.out.println("Disconnecting... ");
  						String temp_data = "Disconnect;"+inds;
  						dis = temp_data.getBytes();
  						for (int i =0;i<IP_list.length;i++) {
