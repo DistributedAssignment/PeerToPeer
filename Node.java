@@ -113,7 +113,7 @@ public class Node {
 				port +=1;
 			}
 	    }
-		name = "Node, network "+ip_str+" port "+port;
+		name = "Node#network.."+ip_str+"#port.."+port;
 		System.out.println(port);
 	    try {
 	 		pbM = new PrintStream("Data\\Setup data "+port+".txt");
@@ -146,9 +146,9 @@ public class Node {
 		//Processes the data
 		String[] data = everything.split("\n");
 		//Gets the port, IP and accout list
-		String[] port_data = data[0].split(" ");
-		String[] IP_data = data[1].split(" ");
-		String[] name_data = data[2].split(" ");
+		String[] port_data = data[0].split(";");
+		String[] IP_data = data[1].split(";");
+		String[] name_data = data[2].split(";");
 		//processes the data in the repository
 		for (int i = 0; i<port_list.length;i++) {
 			if ((IP_data[i].trim()).equals("null")) {
@@ -197,7 +197,7 @@ public class Node {
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
 		try {
-			up_data = ("NewI "+port+" "+ip_str+" "+name).getBytes();
+			up_data = ("NewI;"+port+";"+ip_str+";"+name).getBytes();
 			packet = new DatagramPacket(up_data, up_data.length,IP_list[com],port_list[com]);	
 			socket_r.send(packet);
 			packet = null;
@@ -215,16 +215,18 @@ public class Node {
 		
 		//The account data is constructeds
 		String temp = new String(re_data);
-		if (temp.length()<2) {
-			data = temp.split(" ");
-			String[] a;
-			for (int i = 0; i<data.length; i++) {
-				a= data[i].split(",");
+		temp = temp.trim();
+		System.out.println(temp);
+		if (temp.length()>2) {
+			String[] account_arr = temp.split(";");
+			for (int i = 0; i<account.length; i++) {
+				String[] a= account_arr[i].split(",");
 				int b = Integer.parseInt(a[0].trim());
 				int in = Integer.parseInt(a[1].trim());
 				account_list[in] = b;
 				account_index[in] = in;
 			}
+			
 		}
 		System.err.println("Account data constructed");
 		/***THE NODE IS NOW ON THE NETWORK***/
@@ -235,21 +237,22 @@ public class Node {
 				ip_list[0] = ip_str;
 				IP_list[0]= ip;
 				port_list[0] = port;
+				name_list[0] = name;
 			
 			try {
 	        FileWriter myWriter = new FileWriter("Data.txt");
 	        for (int j = 0; j<2048; j++) {
-	        	myWriter.write(port_list[j]+" ");
+	        	myWriter.write(port_list[j]+";");
 	        }
 	        myWriter.write("\n");
 	        for (int j = 0; j<2048; j++) {
-	        	if (ip_list[j]==null) {myWriter.write("null ");  	
-	        	} else {myWriter.write(ip_list[j]+" "); }
+	        	if (ip_list[j]==null) {myWriter.write("null;");  	
+	        	} else {myWriter.write(ip_list[j]+";"); }
 	        }
 	        myWriter.write("\n");
 	        for (int j = 0; j<2048; j++) {
-	        	if (name_list[j]==null) {myWriter.write("null ");  	
-	        	} else {myWriter.write(name_list[j]+" "); }
+	        	if (name_list[j]==null) {myWriter.write("null;");  	
+	        	} else {myWriter.write(name_list[j]+";"); }
 	        }
 	        myWriter.close();
 			} catch (Exception e) {e.printStackTrace();}
@@ -300,7 +303,7 @@ public class Node {
 			byte[] data = new byte[65536];
 			try {
 				System.err.println("U: Updating");
-				String temp_data = "Update "+update[0]+" "+update[1];
+				String temp_data = "Update;"+update[0]+";"+update[1];
 				data = temp_data.getBytes();
 				for (int i =0;i<IP_list.length;i++) {
 					if (port_list[i] != -1) {
@@ -335,8 +338,10 @@ public class Node {
 			byte[] data_node = null;		    
 			try {
 				//Gets the message and acts accordingly
-				System.err.println("M: Message received "+String.join(",",message));
+				System.err.println("M: Message received ");
+				System.err.print(message[0]+" "+message[1]+" " +message[2]);
 				if ((message[0].trim()).equals("Update")) {
+					System.err.println(message[0]+" "+message[1]+" " +message[2]);
 					synchronized(account_list) {account_list[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[1].trim());}
 					synchronized(account_index) {account_index[Integer.parseInt(message[2].trim())] = Integer.parseInt(message[2].trim());}
 				} else if ((message[0].trim()).equals("New")) {
@@ -354,7 +359,12 @@ public class Node {
 		 			
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if ((message[0].trim()).equals("NewI")) {
-						String temp = "New "+message[1].trim()+" "+message[2].trim()+" "+message[3].trim();
+					PrintStream pbMe2 = null;
+				    try {
+				 		pbMe2 = new PrintStream("Data\\Messenger data initial "+port+".txt");
+				 		System.setErr(pbMe);
+				    } catch (Exception e) {e.printStackTrace();}
+						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim();
 						System.err.println(temp);
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
@@ -383,9 +393,10 @@ public class Node {
 				String account_dat = "";
 				   for (int i = 0; i<2048; i++) {
 				        if (account_index[i] != -1) {
-				        	account_dat = account_dat + (account_list[i] +","+account_index[i] + " ").trim();
+				        	account_dat = account_dat +(account_list[i]+","+account_index[i]+";").trim();
 				        }
 				     }
+				   System.out.println(account_dat);
 				   data_node = account_dat.getBytes();
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
@@ -395,17 +406,17 @@ public class Node {
 					try {
 			        FileWriter myWriter = new FileWriter("Data.txt");
 			        for (int j = 0; j<2048; j++) {
-			        	myWriter.write(port_list[j]+" ");
+			        	myWriter.write(port_list[j]+";");
 			        }
 			        myWriter.write("\n");
 			        for (int j = 0; j<2048; j++) {
-			        	if (ip_list.equals(null)) {myWriter.write("NULL ");  	
-			        	} else {myWriter.write(ip_list[j]+" ");}
+			        	if (ip_list.equals(null)) {myWriter.write("null;");  	
+			        	} else {myWriter.write(ip_list[j]+";");}
 			        }
 			        myWriter.write("\n");
 			        for (int j = 0; j<2048; j++) {
-			        	if (name_list.equals(null)) {myWriter.write("NULL ");  	
-			        	} else {myWriter.write(name_list[j]+" ");}
+			        	if (name_list.equals(null)) {myWriter.write("null;");  	
+			        	} else {myWriter.write(name_list[j]+";");}
 			        }
 			        myWriter.close();
 					} catch (Exception e) {e.printStackTrace();}
@@ -417,10 +428,11 @@ public class Node {
 						File workDir = new File( "I:\\git\\PeerToPeer\\");
 						Process process = Runtime.getRuntime().exec( commands, null, workDir);
 					} catch (Exception e) {e.printStackTrace();}
-					
+				pbMe2.close();
 				} 
 				System.err.println("M complete");
 				pbMe.close();
+			
 			} catch (Exception e) {e.printStackTrace();}
 		}
 	}
@@ -432,10 +444,10 @@ public class Node {
 		
 		public void run() {
 			PrintStream pbR = null;
-		    /*try {
+		    try {
 		 		pbR = new PrintStream("Data\\Receiver data "+port+".txt");
 		 		System.setErr(pbR);
-		    } catch (Exception e) {e.printStackTrace();}*/
+		    } catch (Exception e) {e.printStackTrace();}
 		    
 			byte[] receive = new byte[65536];
 			while (true) { 
@@ -450,7 +462,7 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				System.err.println("R: "+temp);
-				message = temp.split(" ");
+				message = temp.split(";");
 				(new Messenger(message)).start();
 				System.err.println("R: Created messenger");
 				packet =null;
@@ -530,7 +542,6 @@ public class Node {
  				}
  				number = 0;
  		    	if (change_index!=-1) {
- 		    		System.out.println("Worked");
  		    		int[] u = new int[2];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
  		    		synchronized(account_index) { u[1] = account_index[change_index];}
@@ -539,8 +550,7 @@ public class Node {
  		    	}
  				}
  		}
- 		
- 		private synchronized  boolean accountManagement(String account) {
+ 		private synchronized boolean accountManagement(String account) {
  	    	Scanner myObj = new Scanner(System.in);
  	    	int number = 0;
  	    	String choice = "";
@@ -552,10 +562,11 @@ public class Node {
  	    		
  	    	}
  			try {
- 		    	System.out.print("Input: ");
+ 		    	
  		    	boolean input =false;
  		    	while (!input) {
  		    		try {
+ 		    			System.out.print("Input: ");
  		    			choice = myObj.nextLine();
  		    			input = true;
  		    		} catch (Exception e) {
@@ -600,8 +611,9 @@ public class Node {
  	    	return b;
  	    }
  		
- 		private synchronized boolean retrieveData(String account)  {	
- 			try {if (account_index[Integer.parseInt(account)]!= -1) {
+ 		private static boolean retrieveData(String account)  {
+ 			System.out.println(account_index[Integer.parseInt(account)]);
+ 			try {if (account_index[Integer.parseInt(account.trim())]!= -1) {
  			System.out.println("--------------------------");
 
  				System.out.println("Account number: " + account_index[Integer.parseInt(account)]);
@@ -624,7 +636,7 @@ public class Node {
  			}
  	    }
  	        
- 	    private synchronized  void withdraw(String account)  {
+ 	    private static  void withdraw(String account)  {
  		 	boolean withdraw = false;
  		 	int money = 0;
  		 	String money_str = null;
@@ -690,7 +702,7 @@ public class Node {
  		 	}
  	 }
  	 
- 	    private synchronized  void deposit(String account)  {
+ 	    private static  void deposit(String account)  {
  		 	boolean deposit =  false;
  		 	int money = 0;
  		 	String money_str = null;
@@ -747,7 +759,7 @@ public class Node {
  		 	}
  	 }
 
- 	    private synchronized void createAccount()  {
+ 	    private static void createAccount()  {
  	        Scanner myObj = new Scanner(System.in);
  			boolean create = false;
  			int overdraft = 0;
@@ -786,11 +798,11 @@ public class Node {
  			}
  			//1 indicates it is being used
  			change_index = ind;
- 	 		account_index[ind] = 1;
+ 	 		account_index[ind] = ind;
  			System.out.println("Account number: " + ind);
  	    }
  	 
- 	    private synchronized boolean closeData(String account)  {
+ 	    private static boolean closeData(String account)  {
  			try {if (account_index[Integer.parseInt(account)]!= -1) {
  			System.out.println("--------------------------");
  				account_index[Integer.parseInt(account)] = -1;
