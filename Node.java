@@ -470,7 +470,7 @@ public class Node {
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped 
 				System.out.println(temp.trim());
-				if (temp=="Disconnect;"+inds) {
+				if (temp.trim()=="Disconnect;"+inds) {
 					break;
 				}
 			}
