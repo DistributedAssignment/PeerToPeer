@@ -398,13 +398,11 @@ public class Node {
 				} else if ((message[0].trim()).equals("NewI")) {
 						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim()+";"+message[4].trim();
 						data_node = temp.getBytes();
-						int k=0;
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
 								socket_m.send(packet);
 								packet = null;
-								k=i;
 							}
 						}
 						
@@ -429,7 +427,7 @@ public class Node {
 				     }
 				   account_dat = account_dat + ":" + l.getPort();
 				   data_node = account_dat.getBytes();
-					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
+					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[n],port_list[n]);
 					socket_m.send(packet);
 					packet = null;
 					
