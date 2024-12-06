@@ -631,7 +631,6 @@ public class Node {
  	 	    	switch(number) {
  	 	    	  case 1:
  	 	    		b = retrieveData(account);
- 	 	    		b = true;
  	 	    		break;
  	 	    	  case 2:
  	 	 		 	
@@ -656,25 +655,27 @@ public class Node {
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = -1;
+ 	 	 				b = true;
  	 	 				
  	 	 			} else if (w == -1) {
  	 	 				System.out.println("Inavlid input");
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = -1;
+ 	 	 				b = true;
  	 	 			}else if (w == -2) {
  	 	 				System.out.println("Account no longer exists");
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = -1;
+ 	 	 				b = false;
  	 	 			}else {
  	 	 				System.out.println("Account balance: " + account_list[Integer.parseInt(account)] );
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = Integer.parseInt(account);
+ 	 	 				b = true;
  	 	 			}
- 	 	 			
- 	 	    		b = true;
  	 	    		break;
  	 	    	  case 3:
  	 	 		 	
@@ -700,20 +701,23 @@ public class Node {
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = -1;
+ 	 	 				b = true;
  	 	 			}else if (d == -2) {
  	 	 				System.out.println("Account does not exist");
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = -1;
+ 	 	 				b = false;
  	 	 				
  	 	 			} else {
  	 	 				System.out.println("Account balance: " + account_list[Integer.parseInt(account)]);
  	 	 				System.out.println("--------------------------");
  	 	 				System.out.println("");
  	 	 				change_index = Integer.parseInt(account);
+ 	 	 				b = true;
  	 	 			}
  	 	 			
- 	 	    		b = true;
+ 	 	    		
  	 	    		break;
  	 	    	  case 4:
  	 	      		closeData(account);
