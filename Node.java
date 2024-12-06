@@ -473,6 +473,7 @@ public class Node {
 					break;
 				}
 			}
+			System.out.println("Disconnected");
 		}
 	}
 	
