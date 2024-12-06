@@ -63,7 +63,6 @@ public class Node {
  	public void create() {
 		Receiver r = new Receiver();
 		Client c = new Client();
-		Ping p = new Ping();
 		c.start();
 		r.start();
 		try{
@@ -240,7 +239,7 @@ public class Node {
 		//The account data is constructeds
 		String temp = new String(re_data);
 		temp = temp.trim();
-		data_arr = temp.split(":");
+		String[] data_arr = temp.split(":");
 		String ping_temp = data_arr[1];
 		int ping_port = Integer.parseInt(ping_temp);
 		if (temp.length()>2) {
@@ -399,11 +398,13 @@ public class Node {
 				} else if ((message[0].trim()).equals("NewI")) {
 						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim()+";"+message[4].trim();
 						data_node = temp.getBytes();
+						int k=0;
 						for (int i =0;i<IP_list.length;i++) {
 							if (port_list[i] != -1) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
 								socket_m.send(packet);
 								packet = null;
+								k=i;
 							}
 						}
 						
@@ -417,7 +418,7 @@ public class Node {
 	 					synchronized(index_list) {index_list[n] = n;	}
 			 			
 	 					//Creates a listener for the node
-	 					Listener l = new Listener(n);
+	 					Listen l = new Listen(n);
 	 					l.start();
 			 			
 				String account_dat = "";
@@ -426,7 +427,7 @@ public class Node {
 				        	account_dat = account_dat +(account_list[i]+","+account_index[i]+";").trim();
 				        }
 				     }
-				   account_data = account_data + ":" + l.getPort();
+				   account_dat = account_dat + ":" + l.getPort();
 				   data_node = account_dat.getBytes();
 					DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[k],port_list[k]);
 					socket_m.send(packet);
@@ -500,20 +501,19 @@ public class Node {
 		}
 	}
 	
-	private class Listen() extends Thread{
-		
+	private class Listen extends Thread{
 		DatagramSocket socket_t;
 		DatagramSocket socket_l;
 		byte[] listen;
 		int index;
 		int port_l = 0;
-		public Listern(int index) {
-			//initialises the socket which will updates the nodes on the network
+		public Listen(int index) {
+			//initialises the socket which will notify the listener  and the nodes on the network when the node fails
 			boolean setup = false;
 			while (setup == false) {
 		    	try {
 		    		setup = true;
-		    		this.socket_t = new DatagramSocket(port,ip);
+		    		this.socket_t = new DatagramSocket(port_l,ip);
 				} catch (SocketException e) {
 					setup = false;
 					this.port_l +=1;
@@ -524,7 +524,7 @@ public class Node {
 			while (setup == false) {
 		    	try {
 		    		setup = true;
-		    		this.socket_l = new DatagramSocket(port,ip);
+		    		this.socket_l = new DatagramSocket(port_l,ip);
 				} catch (SocketException e) {
 					setup = false;
 					this.port_l +=1;
@@ -536,24 +536,29 @@ public class Node {
 		public void run() {
 			boolean ping = true;
 			while (ping) {
-			listen = new byte[65536];
-			Timer t = new Timer();
+			listen = new byte[65500];
+			Timer t = new Timer(index);
 			t.start();
-			socket_l.receive(listen, listen.length);
-			String s = new String(listen)
+			DatagramPacket packet = new DatagramPacket(listen,listen.length); 
+			try {socket_l.receive(packet);
+			} catch (Exception e)  {}
+			packet =null;
+			String s = new String(listen);
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} 
-			t.interrupt();
+			try {t.interrupt();
+			} catch (Exception e)  {}
+			}
 			listen = null;
 			}
-			}
+			
 	
-		public void getPort() {
+		public int getPort() {
 			return port_l;
 		}
 		
-	}
+	
 	
 	private class Timer extends Thread{
 		long wait;
@@ -586,22 +591,22 @@ public class Node {
 				packet = null;
 				
 				//The times has now run out and the timer will now disconnect the node
-				String temp_data = "Disconnect;"+index;
+				temp_data = "Disconnect;"+index_l;
 				disl = temp_data.getBytes();
 				for (int i =0;i<IP_list.length;i++) {
 					if (port_list[i] != -1) {
-						DatagramPacket packet = new DatagramPacket(disl, disl.length,IP_list[i],port_list[i]);
+						packet = new DatagramPacket(disl, disl.length,IP_list[i],port_list[i]);
 						try{socket_t.send(packet);
 						}catch (Exception e) {}	
 						packet = null;
 					}
 				}
 				
-				synchronized (port_list) {port_list[index]=-1; }
-				synchronized(ip_list)  {ip_list[index]=null; }
-				synchronized(IP_list)  {IP_list[index]=null; }
-				synchronized(name_list)  {name_list[index]=null; }
-				synchronized(index_list)  {index_list[index]=-1; }	
+				synchronized (port_list) {port_list[index_l]=-1; }
+				synchronized(ip_list)  {ip_list[index_l]=null; }
+				synchronized(IP_list)  {IP_list[index_l]=null; }
+				synchronized(name_list)  {name_list[index_l]=null; }
+				synchronized(index_list)  {index_list[index_l]=-1; }	
 			//Reconstructs data
 			try {
 	        FileWriter myWriter = new FileWriter("Data.txt");
@@ -638,8 +643,9 @@ public class Node {
 			}
 		
 	}
- 	
-	private class Ping() extends Thread {
+	}
+
+	private class Ping extends Thread {
 		private static int li_port;
 		private static InetAddress li_IP;
 		public Ping(int a, InetAddress b) {
@@ -649,11 +655,14 @@ public class Node {
 		
 		public void run() {
 			while (true) {
-				Thread.sleep(500);
+				byte[] dis;
+				try {Thread.sleep(500);
+				} catch (Exception e)  {}
+				
 				//Sends a ping to its assigned node
 				String temp_data = "Ping";
 				dis = temp_data.getBytes();
-				DatagramPacket packet = new DatagramPacket(dis, dis.length,li_port,li_IP);
+				DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IP,li_port);
 				try{socket_p.send(packet);
 				}catch (Exception e) {}	
 				packet = null;
