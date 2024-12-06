@@ -55,7 +55,7 @@ public class Node {
  	public void create() {
 		Receiver r = new Receiver();
 		Client c = new Client();
-		//c.setDaemon(true);
+		c.setDaemon(true);
 		c.start();
 		r.start();
 		try{
@@ -863,7 +863,8 @@ public class Node {
  			try {if (account_index[Integer.parseInt(account)]!= -1) {
  			System.out.println("--------------------------");
  				account_index[Integer.parseInt(account)] = -1;
- 				change_index = -1;
+ 				account_list[Integer.parseInt(account)] = 0;
+ 				change_index = account_index[Integer.parseInt(account)];
  				return true;
  			} else {
  				System.out.println("No account found");
