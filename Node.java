@@ -690,7 +690,7 @@ public class Node {
 
 	private class Ping extends Thread {
 		private static int li_ports = new int[2048];
-		private static cur_ind = 0;
+		private static int cur_ind = 0;
 		private static InetAddress li_IPs = new InetAddress[2048];
 		public Ping() {
 			for (int i=0; i<2048;i++){
