@@ -396,7 +396,7 @@ public class Node {
 	 					l.start();
 						try {
 						Thread.sleep(500);
-						String temp = "Ping;"+l.getPort()+":"+ip_str;
+						String temp = "Ping;"+l.getPort()+";"+ip_str;
 						data_node = temp.getBytes();
 						DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[n],port_list[n]);
 						socket_m.send(packet);
@@ -488,6 +488,7 @@ public class Node {
 					try  {
 						int a = Integer.parseInt(message[1].trim());
 						InetAddress b = InetAddress.getByName(message[2].trim());
+						System.out.println(a +" "+b);
 						ping.update(a,b);
 					} catch (Exception e){}
 				}
