@@ -488,7 +488,7 @@ public class Node {
 					try  {
 						int a = Integer.parseInt(message[1].trim());
 						InetAddress b = InetAddress.getByName(message[2].trim());
-						System.out.println(a +" "+b);
+						//System.out.println(a +" "+b);
 						ping.update(a,b);
 					} catch (Exception e){}
 				}
@@ -517,7 +517,7 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				message = temp.split(";");
-				System.out.println("R: "+temp.trim());
+				//System.out.println("R: "+temp.trim());
 				(new Messenger(message)).start();
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
@@ -559,7 +559,7 @@ public class Node {
 				ping = false;
 			} else {
 				t.resetTimer();	
-				System.out.println("L: "+s.trim());				
+				//System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -619,7 +619,7 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
-			System.out.println(time);
+			//System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
@@ -711,7 +711,7 @@ public class Node {
 				dis = temp_data.getBytes();
 				for (int i = 0; i<2048; i++){
 					if (li_IPs[i] != null){
-						System.out.println("P: Ping "+li_IPs[i]+" "+li_ports[i]);
+						//System.out.println("P: Ping "+li_IPs[i]+" "+li_ports[i]);
 						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
 						try{socket_p.send(packet);
 						}catch (Exception e) {e.printStackTrace();}	
@@ -724,7 +724,7 @@ public class Node {
 		public void update(int a, InetAddress b) {
 			li_ports[cur_ind] = a;
 			li_IPs[cur_ind] = b;
-			System.out.println(li_ports[cur_ind]+" "+li_IPs[cur_ind]);
+			//System.out.println(li_ports[cur_ind]+" "+li_IPs[cur_ind]);
 			cur_ind += 1;
 		}
 	}
