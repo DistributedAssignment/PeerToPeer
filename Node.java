@@ -556,7 +556,8 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.resetTimer();				
+				t.resetTimer();	
+				System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -616,6 +617,7 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
+			System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
@@ -707,6 +709,7 @@ public class Node {
 				dis = temp_data.getBytes();
 				for (int i = 0; i<2048; i++){
 					if (li_IPs[i] != null){
+						System.out.println("P: Ping "+li_IPs[i]+" "+li_ports[i]);
 						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
 						try{socket_p.send(packet);
 						}catch (Exception e) {e.printStackTrace();}	
