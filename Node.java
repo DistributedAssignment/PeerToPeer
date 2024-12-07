@@ -677,6 +677,7 @@ public class Node {
 				try{socket_p.send(packet);
 				}catch (Exception e) {e.printStackTrace();}	
 				packet = null;
+				System.out.println("P: Ping");
 			}
 		}
 	}
