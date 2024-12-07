@@ -530,7 +530,7 @@ public class Node {
 				ping = false;
 			} else {
 				t.interrupt();	
-				System.out.println("L: "+s.trim());				
+				System.out.println("L: "+s.trim()+" "+(noot && !Thread.interrupted()));				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
