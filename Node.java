@@ -570,8 +570,8 @@ public class Node {
 	
 	
 	private class Timer extends Thread{
-		long wait;
-		long start_time;
+		double wait;
+		double start_time;
 		int index_l;
 		public Timer(int i) {
 			this.index_l = i;
