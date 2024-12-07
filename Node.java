@@ -587,8 +587,8 @@ public class Node {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
 			}
-			long end_time = System.currentTimeMillis();
-			long time =(end_time - start_time)/1000;
+			double end_time = System.currentTimeMillis();
+			double time =(end_time - start_time)/1000;
 			System.out.println(time);
 			if (time >= wait) {	
 				
