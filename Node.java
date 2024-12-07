@@ -547,8 +547,9 @@ public class Node {
 			} 
 			try {t.interrupt();
 			} catch (Exception e)  {}
-			}
+			
 			listen = null;
+			}
 			}
 			
 	
