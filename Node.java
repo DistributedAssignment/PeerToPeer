@@ -561,6 +561,7 @@ public class Node {
 		
 	
 	
+	
 	private class Timer extends Thread{
 		long wait;
 		long start_time;
@@ -683,6 +684,7 @@ public class Node {
  		
  		public void run() {	
  			//Starts the ping here so that is can be stopped when the client disconnects
+			System.out.println(ping_port+" "+ping_IP);
  			Ping ping = new Ping(ping_port,ping_IP);
  			ping.start();
  			/**Set everything up**/
