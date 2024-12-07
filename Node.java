@@ -516,6 +516,7 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				message = temp.split(";");
+				System.out.println("R: "+temp.trim());
 				(new Messenger(message)).start();
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
