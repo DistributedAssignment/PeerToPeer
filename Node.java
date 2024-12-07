@@ -693,6 +693,7 @@ public class Node {
 			Ping ping = null;	
  			//Starts the ping here so that is can be stopped when the client disconnects
  			if (ping_IP!= null){
+			System.out.println(ping_port);
 			ping = new Ping(ping_port,ping_IP);
  			ping.start();}
  			/**Set everything up**/
