@@ -1,0 +1,1 @@
+del .git\index.lock
