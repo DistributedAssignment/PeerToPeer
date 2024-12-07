@@ -528,7 +528,8 @@ public class Node {
 			String s = new String(listen);
 			if ((s.trim()).equals("End")) {
 				ping = false;
-			} else {					
+			} else {
+				t.interrupt();					
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
