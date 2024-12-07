@@ -539,7 +539,7 @@ public class Node {
 			}
 					
 		public void initialise() {
-						//initialises the socket which will notify the listener  and the nodes on the network when the node fails
+			//initialises the socket which will notify the listener  and the nodes on the network when the node fails
 			boolean setup = false;
 			while (setup == false) {
 		    	try {
@@ -583,7 +583,7 @@ public class Node {
 		public void run() {	
 		byte[] disl;
 		boolean noot = true;
-		while(noot) {
+		while(noot && !Thread.interrupted()) {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -651,7 +651,8 @@ public class Node {
 			}
 		}
 	}
-			}
+	Thread.currentThread().interrupt();
+}
 		
 	}
 	}
