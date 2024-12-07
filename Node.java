@@ -724,6 +724,7 @@ public class Node {
 		public void update(int a, InetAddress b) {
 			li_ports[cur_ind] = a;
 			li_IPs[cur_ind] = b;
+			System.out.println(li_ports[cur_ind]+" "+li_IPs[cur_ind]);
 			cur_ind += 1;
 		}
 	}
