@@ -534,8 +534,7 @@ public class Node {
 		byte[] listen;
 		int index;
 		int port_l;
-		boolean initial;
-		public Listen(int index,boolean in) {
+		public Listen(int index) {
 			this.index = index;
 			this.port_l = 1;
 			this.socket_t = null;
