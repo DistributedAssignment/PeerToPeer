@@ -584,7 +584,7 @@ public class Node {
 		byte[] disl;
 		boolean noot = true;
 		while(noot && !Thread.interrupted()) {
-			System.out.println("T: "+(noot && !Thread.interrupted()) )
+			System.out.println("T: "+(noot && !Thread.interrupted()) );
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
