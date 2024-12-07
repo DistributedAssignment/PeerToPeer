@@ -242,7 +242,7 @@ public class Node {
 		String[] data_arr = temp.split(":");
 		String ping_temp = data_arr[1];
 		int ping_port = Integer.parseInt(ping_temp);
-		if (temp.length()>2) {
+		if (data_arr[0].length()>2) {
 			String[] account_arr =data_arr[0].split(";");
 			for (int i = 0; i<account_arr.length; i++) {
 				String[] a= account_arr[i].split(",");
@@ -417,9 +417,10 @@ public class Node {
 			 			
 	 					//Creates a listener for the node
 	 					Listen l = new Listen(n);
+						l.initialise();
 	 					l.start();
 			 			
-				String account_dat = "";
+				  String account_dat = "";
 				   for (int i = 0; i<2048; i++) {
 				        if (account_index[i] != -1) {
 				        	account_dat = account_dat +(account_list[i]+","+account_index[i]+";").trim();
@@ -490,7 +491,6 @@ public class Node {
 				(new Messenger(message)).start();
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
-				System.out.println(temp.trim());
 				if (temp.trim().equals("Disconnect;"+inds)) {
 					break;
 				}
@@ -504,33 +504,16 @@ public class Node {
 		DatagramSocket socket_l;
 		byte[] listen;
 		int index;
-		int port_l = 0;
+		int port_l;
 		public Listen(int index) {
-			//initialises the socket which will notify the listener  and the nodes on the network when the node fails
-			boolean setup = false;
-			while (setup == false) {
-		    	try {
-		    		setup = true;
-		    		this.socket_t = new DatagramSocket(port_l,ip);
-				} catch (SocketException e) {
-					setup = false;
-					this.port_l +=1;
-				}
-		    }
-			//initialises the socket which will listen for pings
-			setup = false;
-			while (setup == false) {
-		    	try {
-		    		setup = true;
-		    		this.socket_l = new DatagramSocket(port_l,ip);
-				} catch (SocketException e) {
-					setup = false;
-					this.port_l +=1;
-				}
-		    }
 			this.index = index;
+			this.port_l = 1;
+			this.socket_t = null;
+			this.socket_l = null;
+			
 		}
 		
+
 		public void run() {
 			boolean ping = true;
 			while (ping) {
@@ -542,19 +525,41 @@ public class Node {
 			} catch (Exception e)  {}
 			packet =null;
 			String s = new String(listen);
-			System.out.println("L: "+s);
 			if ((s.trim()).equals("End")) {
 				ping = false;
-			} 
-
-			try {t.interrupt();
-			} catch (Exception e)  {}
-			System.out.println("Timer stopped");
+			} else {					
+				try {t.interrupt();
+				} catch (Exception e)  {}
+			}
 			listen = null;
 			}
 			}
-			
-	
+					
+		public void initialise() {
+						//initialises the socket which will notify the listener  and the nodes on the network when the node fails
+			boolean setup = false;
+			while (setup == false) {
+		    	try {
+		    		setup = true;
+		    		socket_t = new DatagramSocket(port_l,ip);
+				} catch (Exception e) {
+					setup = false;
+					port_l +=1;
+				}
+		    }
+			//initialises the socket which will listen for pings
+			setup = false;
+			while (setup == false) {
+		    	try {
+		    		setup = true;
+		    		socket_l = new DatagramSocket(port_l,ip);
+				} catch (Exception e) {
+					setup = false;
+					port_l +=1;
+				}
+		    }
+		}
+
 		public int getPort() {
 			return port_l;
 		}
@@ -569,21 +574,22 @@ public class Node {
 		public Timer(int i) {
 			this.index_l = i;
 			this.start_time = System.currentTimeMillis();
-			this.wait = 25;
+			this.wait = 25/10;
 		}
 		
 		public void run() {	
 		byte[] disl;
-		while(true) {
+		boolean noot = true;
+		while(noot) {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
 			}
 			long end_time = System.currentTimeMillis();
 			long time =(end_time - start_time)/1000;
 			
 			if (time >= wait) {	
+				noot = false;
 				//Notifys the listener
 				String temp_data = "End";
 				disl = temp_data.getBytes();
@@ -682,11 +688,12 @@ public class Node {
  		public Client() {
  		}
  		
- 		public void run() {	
+ 		public void run() {
+			Ping ping = null;	
  			//Starts the ping here so that is can be stopped when the client disconnects
-			System.out.println(ping_port+" "+ping_IP);
- 			Ping ping = new Ping(ping_port,ping_IP);
- 			ping.start();
+ 			if (ping_IP!= null){
+			ping = new Ping(ping_port,ping_IP);
+ 			ping.start();}
  			/**Set everything up**/
  			Scanner myObj = new Scanner(System.in);
  	    	myObj.useDelimiter(System.lineSeparator());
