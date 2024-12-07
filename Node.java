@@ -532,7 +532,7 @@ public class Node {
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
-			System.out.println("L: "+s);
+			System.out.println("L: "+s.trim());
 			listen = null;
 			}
 			}
