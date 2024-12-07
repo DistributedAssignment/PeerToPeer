@@ -995,7 +995,7 @@ public class Node {
  	 	    		
  				number = 0;
  				//Any changes made in this menu is updated here on the network
- 				System.out.println(change_index);
+ 				//System.out.println(change_index);
  		    	if (change_index!=-1) {
  		    		int[] u = new int[3];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
