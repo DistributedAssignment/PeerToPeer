@@ -584,7 +584,7 @@ public class Node {
 		boolean noot = true;
 		while(noot) {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(50);
 			} catch (InterruptedException e) {
 			}
 			double end_time = System.currentTimeMillis();
