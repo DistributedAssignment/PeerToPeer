@@ -70,6 +70,7 @@ public class Node {
 
 		//Starts the ping here so that is can be stopped when the client disconnects
 		ping = new Ping();
+		System.out.println(ping_port +" "+ping_IP);
 		if (ping_IP!= null){
 		ping.update(ping_port,ping_IP);
 		}
