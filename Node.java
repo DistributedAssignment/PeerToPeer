@@ -708,10 +708,14 @@ public class Node {
 				//Sends a ping to its assigned node
 				String temp_data = "Ping";
 				dis = temp_data.getBytes();
-				DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IP,li_port);
-				try{socket_p.send(packet);
-				}catch (Exception e) {e.printStackTrace();}	
-				packet = null;
+				for (int i = 0; i<2-48: i++){
+					if (li_IPs[i] != null){
+						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
+						try{socket_p.send(packet);
+						}catch (Exception e) {e.printStackTrace();}	
+						packet = null;
+					}
+				}
 			}
 		}
 
