@@ -589,9 +589,9 @@ public class Node {
 			}
 			long end_time = System.currentTimeMillis();
 			long time =(end_time - start_time)/1000;
-			
+			System.out.println(time);
 			if (time >= wait) {	
-				System.out.println(time);
+				
 				noot = false;
 				//Notifys the listener
 				String temp_data = "End";
