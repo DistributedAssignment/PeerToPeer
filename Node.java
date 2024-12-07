@@ -241,7 +241,7 @@ public class Node {
 		temp = temp.trim();
 		String[] data_arr = temp.split(":");
 		String ping_temp = data_arr[1];
-		System.out.println(ping_temp)
+		System.out.println(ping_temp);
 		int ping_port = Integer.parseInt(ping_temp);
 		if (data_arr[0].length()>2) {
 			String[] account_arr =data_arr[0].split(";");
