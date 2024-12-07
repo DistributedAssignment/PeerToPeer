@@ -70,7 +70,6 @@ public class Node {
 
 		//Starts the ping here so that is can be stopped when the client disconnects
 		ping = new Ping();
-		System.out.println(ping_port +" "+ping_IP);
 		if (ping_IP!= null){
 		ping.update(ping_port,ping_IP);
 		}
@@ -519,7 +518,6 @@ public class Node {
 				message = temp.split(";");
 				(new Messenger(message)).start();
 				packet =null;
-				System.out.println(temp.trim());
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
 				if (temp.trim().equals("Disconnect;"+inds)) {
 					break;
@@ -558,8 +556,7 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.resetTimer();	
-				System.out.println("L: "+s.trim());				
+				t.resetTimer();				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -619,7 +616,6 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
-			System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
