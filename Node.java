@@ -577,7 +577,7 @@ public class Node {
 		public Timer(int i) {
 			this.index_l = i;
 			this.start_time = System.currentTimeMillis();
-			this.wait = 25/10;
+			this.wait = 75/10;
 		}
 		
 		public void run() {	
@@ -677,7 +677,6 @@ public class Node {
 				try{socket_p.send(packet);
 				}catch (Exception e) {e.printStackTrace();}	
 				packet = null;
-				System.out.println("P: Ping");
 			}
 		}
 	}
