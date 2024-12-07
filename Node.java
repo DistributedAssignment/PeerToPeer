@@ -519,7 +519,7 @@ public class Node {
 				message = temp.split(";");
 				(new Messenger(message)).start();
 				packet =null;
-				System.out.println(temp);
+				System.out.println(temp.trim());
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
 				if (temp.trim().equals("Disconnect;"+inds)) {
 					break;
