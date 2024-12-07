@@ -606,7 +606,7 @@ public class Node {
 		public Timer(int i) {
 			this.index_l = i;
 			this.start_time = System.currentTimeMillis();
-			this.wait = 25/10;
+			this.wait = 50/10;
 		}
 		
 		public void run() {	
