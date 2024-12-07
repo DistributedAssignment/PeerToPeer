@@ -577,7 +577,7 @@ public class Node {
 		public Timer(int i) {
 			this.index_l = i;
 			this.start_time = System.currentTimeMillis();
-			this.wait = 75/10;
+			this.wait = 25/10;
 		}
 		
 		public void run() {	
