@@ -51,6 +51,7 @@ public class Node {
  	static int inds = 0;
  	static int ping_port;
  	static InetAddress ping_IP;
+	static Ping ping;
 	//This is the index of a changed account
 	static int change_index = -1;
 	//For out putting information about what the node is doing in the background
@@ -65,9 +66,19 @@ public class Node {
 		Client c = new Client();
 		c.start();
 		r.start();
+
+
+		//Starts the ping here so that is can be stopped when the client disconnects
+		ping = new Ping();
+		if (ping_IP!= null){
+		ping.update(ping_port,ping_IP);
+		}
+		ping.start();
+
 		try{
 		c.join();
 		r.join();
+		ping.join();
 		} catch (Exception e) {}
  	}
  	
@@ -379,8 +390,19 @@ public class Node {
 	 					synchronized(name_list) {name_list[n] = message[3].trim();	}
 	 					synchronized(index_list) {index_list[n] = n;	}
 		 			
-		 		
-		 			
+		 				//Creates a listener for the node
+	 					Listen l = new Listen(n);
+						l.initialise();
+	 					l.start();
+						try {
+						thread.sleep(500);
+						String temp = "Ping;"+l.getPort()+":"+ip_str;
+						data_node = temp.getBytes();
+						DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
+						socket_m.send(packet);
+						packet = null;
+						} catch (Exception e) {}
+
 					//If this is the node with initial contact, all nodes are updated by it
 				} else if ((message[0].trim()).equals("Disconnect")) {
 					//Updates its node list
@@ -462,7 +484,13 @@ public class Node {
 						pb.directory(dir);
 						Process p = pb.start();
 					} catch (Exception e) {e.printStackTrace();}
-				} 
+				} else if ((message[0].trim()).equals("Ping")) {
+					try  {
+						int a = Integer.parseInt(message[1].trim());
+						int b = InetAddress.getByName(message[2].trim());
+						ping.update(a,b);
+					} catch (Exception e){}
+				}
 			
 			} catch (Exception e) {e.printStackTrace();}
 		}
@@ -530,7 +558,7 @@ public class Node {
 				ping = false;
 			} else {
 				t.resetTimer();	
-				System.out.println("L: "+s.trim());				
+				//System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -590,7 +618,7 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
-			System.out.println(time);
+			//System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
@@ -661,11 +689,14 @@ public class Node {
 	}
 
 	private class Ping extends Thread {
-		private static int li_port;
-		private static InetAddress li_IP;
-		public Ping(int a, InetAddress b) {
-			li_port = a;
-			li_IP = b;
+		private static int li_ports = new int[2048];
+		private static cur_ind = 0;
+		private static InetAddress li_IPs = new InetAddress[2048];
+		public Ping() {
+			for (int i=0; i<2048;i++){
+				li_ports[i] = 0;
+				li_IPs[i] = null;
+			}
 		}
 		
 		public void run() {
@@ -683,6 +714,12 @@ public class Node {
 				packet = null;
 			}
 		}
+
+		public void update(int a, InetAddress b) {
+			ping_ports[cur_ind] = a;
+			ping_IPs[cur_ind] = b;
+			cur_ind += 1;
+		}
 	}
 	
 	//What the client sees
@@ -696,11 +733,6 @@ public class Node {
  		}
  		
  		public void run() {
-			Ping ping = null;	
- 			//Starts the ping here so that is can be stopped when the client disconnects
- 			if (ping_IP!= null){
-			ping = new Ping(ping_port,ping_IP);
- 			ping.start();}
  			/**Set everything up**/
  			Scanner myObj = new Scanner(System.in);
  	    	myObj.useDelimiter(System.lineSeparator());
