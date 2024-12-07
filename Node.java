@@ -515,7 +515,6 @@ public class Node {
 		
 
 		public void run() {
-			System.out.println("L: "+port_l+" "+ip_str);
 			boolean ping = true;
 			while (ping && !Thread.interrupted()) {
 			listen = new byte[65500];
@@ -529,7 +528,7 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.setWait(0);	
+				t.resetTimer();	
 				System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
@@ -593,6 +592,7 @@ public class Node {
 			long time =(end_time - start_time)/1000;
 			
 			if (time >= wait) {	
+
 				noot = false;
 				//Notifys the listener
 				String temp_data = "End";
@@ -653,8 +653,8 @@ public class Node {
 		}
 	}
 }
-	public void setWait(int w){
-		wait = w;
+	public void resetTimer(){
+		start_time = System.currentTimeMillis();
 	}
 		
 	}
