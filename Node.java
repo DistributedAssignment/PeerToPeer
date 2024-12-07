@@ -395,10 +395,10 @@ public class Node {
 						l.initialise();
 	 					l.start();
 						try {
-						thread.sleep(500);
+						Thread.sleep(500);
 						String temp = "Ping;"+l.getPort()+":"+ip_str;
 						data_node = temp.getBytes();
-						DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
+						DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[n],port_list[n]);
 						socket_m.send(packet);
 						packet = null;
 						} catch (Exception e) {}
@@ -487,7 +487,7 @@ public class Node {
 				} else if ((message[0].trim()).equals("Ping")) {
 					try  {
 						int a = Integer.parseInt(message[1].trim());
-						int b = InetAddress.getByName(message[2].trim());
+						InetAddress b = InetAddress.getByName(message[2].trim());
 						ping.update(a,b);
 					} catch (Exception e){}
 				}
