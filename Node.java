@@ -583,7 +583,6 @@ public class Node {
 		byte[] disl;
 		boolean noot = true;
 		while(noot) {
-			System.out.println("T: "+(noot && !Thread.interrupted()) );
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
@@ -592,7 +591,7 @@ public class Node {
 			long time =(end_time - start_time)/1000;
 			
 			if (time >= wait) {	
-
+				System.out.println(time);
 				noot = false;
 				//Notifys the listener
 				String temp_data = "End";
