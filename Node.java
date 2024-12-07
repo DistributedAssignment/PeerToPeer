@@ -542,12 +542,14 @@ public class Node {
 			} catch (Exception e)  {}
 			packet =null;
 			String s = new String(listen);
+			System.out.println("L: "+s);
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} 
+
 			try {t.interrupt();
 			} catch (Exception e)  {}
-			
+			System.out.println("Timer stopped");
 			listen = null;
 			}
 			}
