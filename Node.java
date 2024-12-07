@@ -516,10 +516,11 @@ public class Node {
 
 		public void run() {
 			boolean ping = true;
-			while (ping && !Thread.interrupted()) {
-			listen = new byte[65500];
 			Timer t = new Timer(index);
 			t.start();
+
+			while (ping) {
+			listen = new byte[65500];
 			DatagramPacket packet = new DatagramPacket(listen,listen.length); 
 			try {socket_l.receive(packet);
 			} catch (Exception e)  {}
@@ -571,7 +572,7 @@ public class Node {
 	
 	private class Timer extends Thread{
 		double wait;
-		double start_time;
+		private double start_time = System.currentTimeMillis();
 		int index_l;
 		public Timer(int i) {
 			this.index_l = i;
