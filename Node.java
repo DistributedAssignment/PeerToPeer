@@ -529,7 +529,7 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.interrupt();	
+				t.setWait(0);	
 				System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
@@ -583,7 +583,7 @@ public class Node {
 		public void run() {	
 		byte[] disl;
 		boolean noot = true;
-		while(noot && !Thread.interrupted()) {
+		while(noot) {
 			System.out.println("T: "+(noot && !Thread.interrupted()) );
 			try {
 				Thread.sleep(500);
@@ -652,8 +652,10 @@ public class Node {
 			}
 		}
 	}
-	Thread.currentThread().interrupt();
 }
+	public void setWait(int w){
+		wait = w;
+	}
 		
 	}
 	}
