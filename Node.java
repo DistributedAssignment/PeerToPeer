@@ -666,7 +666,7 @@ public class Node {
 				dis = temp_data.getBytes();
 				DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IP,li_port);
 				try{socket_p.send(packet);
-				}catch (Exception e) {}	
+				}catch (Exception e) {e.printStackTrace();}	
 				packet = null;
 			}
 		}
