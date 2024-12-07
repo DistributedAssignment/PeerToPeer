@@ -710,7 +710,7 @@ public class Node {
 				dis = temp_data.getBytes();
 				for (int i = 0; i<2048; i++){
 					if (li_IPs[i] != null){
-						System.out.println("P: Ping "+li_IPs+" "li_ports[i]);
+						System.out.println("P: Ping "+li_IPs+" "+li_ports[i]);
 						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
 						try{socket_p.send(packet);
 						}catch (Exception e) {e.printStackTrace();}	
