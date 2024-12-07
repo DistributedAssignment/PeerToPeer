@@ -241,8 +241,7 @@ public class Node {
 		temp = temp.trim();
 		String[] data_arr = temp.split(":");
 		String ping_temp = data_arr[1];
-		System.out.println(ping_temp);
-		int ping_port = Integer.parseInt(ping_temp);
+		ping_port = Integer.parseInt(ping_temp);
 		if (data_arr[0].length()>2) {
 			String[] account_arr =data_arr[0].split(";");
 			for (int i = 0; i<account_arr.length; i++) {
@@ -693,7 +692,6 @@ public class Node {
 			Ping ping = null;	
  			//Starts the ping here so that is can be stopped when the client disconnects
  			if (ping_IP!= null){
-			System.out.println(ping_port);
 			ping = new Ping(ping_port,ping_IP);
  			ping.start();}
  			/**Set everything up**/
