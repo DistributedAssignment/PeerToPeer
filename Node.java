@@ -23,7 +23,7 @@ import java.util.concurrent.*;
 public class Node {	
 	//The data
 	static int[] account_list = new int[2048] ;
-	//To make it easier to send data to News
+	//To make it easier to send updates and manage data
 	static int[] account_index = new int[2048];
 	
 
@@ -35,9 +35,9 @@ public class Node {
 	static DatagramSocket socket_m = null;
 	//Used by the client to update nodes
 	static DatagramSocket socket_c = null;
-	//Used by the pinger to send data to its initial connection node
+	//Used by the pinger to send data to its nodes
 	static DatagramSocket socket_p = null;
- 	//The list of nodes on the network
+ 	//The list of nodes on the network and there data
  	static InetAddress[] IP_list = new InetAddress[2048];
  	static String[] ip_list = new String[2048];
  	static int[] port_list = new int[2048];
@@ -49,26 +49,25 @@ public class Node {
  	static InetAddress ip;
  	static int data = 0;
  	static int inds = 0;
+	//Initial ping connection data
  	static int ping_port;
  	static InetAddress ping_IP;
 	static Ping ping;
 	//This is the index of a changed account
 	static int change_index = -1;
-	//For out putting information about what the node is doing in the background
+	//For out putting information about what the node is doing in the background and identifying it
+	//when connecting to other nodes for testing purposes
  	static String name;
- 	/***WORKOUT GIT HUB ISSUE LATER***/
  	public Node() {
  		
  	}
  	
+	//Here the threads which make up the core structure of the node are created and started
  	public void create() {
 		Receiver r = new Receiver();
 		Client c = new Client();
 		c.start();
 		r.start();
-
-
-		//Starts the ping here so that is can be stopped when the client disconnects
 		ping = new Ping();
 		if (ping_IP!= null){
 		ping.update(ping_port,ping_IP);
@@ -84,7 +83,6 @@ public class Node {
  	
  	public static void main(String args[]) {
  		System.out.println("Connecting... ");
- 		//HERE THE NODE IS CREATED
 		//-1 is used as an indicator of an empty space
 		for (int i = 0; i<account_list.length; i++) {
 			account_index[i] = -1;
@@ -138,7 +136,8 @@ public class Node {
 			}
 	    }
 		
-		
+		//Its important this one is initialised last as this is the socket other nodes communicate
+		//with so we want this as the port of our node
 	    setup= false;
 		while (setup == false) {
 	    	try {
@@ -152,7 +151,7 @@ public class Node {
 		name = "Node#network.."+ip_str+"#port.."+port;
 		System.out.println(name);
 		
-		//The account and port data is read from the repository
+		//The port data is read from the repository
 		String everything = null;
 		int com = -1;
 		try {
@@ -202,9 +201,8 @@ public class Node {
 			}
 			}
 		}
-		
-			/**HERE THE NODE CONNECTS TO THE NETWORK**/
-			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository
+
+			//If there are nodes already on the network then the node needs to join it if not it needs to update the repository and create the network
 			if (com != -1) {
 				//Adds it self to the node lists
 				
@@ -221,13 +219,6 @@ public class Node {
 					}
 				}
 				index_list[inds] = inds;
-					
-		/*Now it needs to be added to the network it does by contacting the node in com
-		 * this will be the node responsible for updating the git repository when it fails and this will be noted in the node
-		 * [IF I GOT THIS FAR]
-		 * The receiving node creates a listener for this node and when it fails will remove the node from the list update the repository
-		 * and notify all other nodes
-		 */
 		DatagramPacket packet = null;
 		byte[] up_data = new byte[65536];
 		ping_IP = IP_list[com];
@@ -244,10 +235,8 @@ public class Node {
 		try { socket_r.receive(packet);
 		} catch (Exception e) {e.printStackTrace();}		
 		packet = null;
-		//Now this node should tell all other nodes about this node and will then start to update the other nodes
-		//It should also send the account list to this node
 		
-		//The account data is constructeds
+		//The account data is constructed
 		String temp = new String(re_data);
 		temp = temp.trim();
 		String[] data_arr = temp.split(":");
@@ -264,7 +253,6 @@ public class Node {
 			}
 			
 		}
-		/***THE NODE IS NOW ON THE NETWORK***/
 			}
 			 else {
 				//Adds itself to the list
@@ -302,7 +290,6 @@ public class Node {
 				pb.directory(dir);
 				Process p = pb.start();
 			} catch (Exception e) {e.printStackTrace();}
-			/***THE NETWORK NOW EXISTS***/
 			}
 			Node node = new Node();
 			node.create();
@@ -311,14 +298,13 @@ public class Node {
 	//For retrieving the IP
     private static String getLocalAddress() {
     try (DatagramSocket skt = new DatagramSocket()) {
-        // Use default gateway and arbitrary port
         skt.connect(InetAddress.getByName("192.168.1.1"), 12345);
         return skt.getLocalAddress().getHostAddress();
     } catch (Exception e) {
         return null;
     }
 }
-			
+	//Updates the network of changes
 	private class Updater extends Thread{
 		
 		private int[] update;
@@ -359,6 +345,7 @@ public class Node {
 		}
 	}
 	
+	//Deal with incoming messages
 	private class Messenger extends Thread{
 		private String[] message;
 		public Messenger(String[] ms) {
@@ -403,7 +390,7 @@ public class Node {
 						packet = null;
 						} catch (Exception e) {}
 
-					//If this is the node with initial contact, all nodes are updated by it
+					
 				} else if ((message[0].trim()).equals("Disconnect")) {
 					//Updates its node list
 					int n =Integer.parseInt(message[1].trim());
@@ -488,7 +475,6 @@ public class Node {
 					try  {
 						int a = Integer.parseInt(message[1].trim());
 						InetAddress b = InetAddress.getByName(message[2].trim());
-						//System.out.println(a +" "+b);
 						ping.update(a,b);
 					} catch (Exception e){}
 				}
@@ -497,6 +483,7 @@ public class Node {
 		}
 	}
 	
+	//Listens for messages and sends then to a messenger
 	private class Receiver extends Thread{
 		public Receiver() {
 			
@@ -517,7 +504,6 @@ public class Node {
 				String[] message;	
 				String temp = new String(receive);
 				message = temp.split(";");
-				//System.out.println("R: "+temp.trim());
 				(new Messenger(message)).start();
 				packet =null;
 				//This is the message that the receiver will get after the client object has stopped telling it to stop aswell
@@ -529,6 +515,7 @@ public class Node {
 		}
 	}
 	
+	//Listens for pings
 	private class Listen extends Thread{
 		DatagramSocket socket_t;
 		DatagramSocket socket_l;
@@ -558,8 +545,7 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.resetTimer();	
-				//System.out.println("L: "+s.trim());				
+				t.resetTimer();					
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -619,7 +605,6 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
-			//System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
@@ -689,6 +674,7 @@ public class Node {
 	}
 	}
 
+	//Sends out pings
 	private class Ping extends Thread {
 		private static int[] li_ports = new int[2048];
 		private static int cur_ind = 0;
@@ -706,12 +692,11 @@ public class Node {
 				try {Thread.sleep(500);
 				} catch (Exception e)  {}
 				
-				//Sends a ping to its assigned node
+				//Sends a ping to its assigned node's
 				String temp_data = "Ping";
 				dis = temp_data.getBytes();
 				for (int i = 0; i<2048; i++){
 					if (li_IPs[i] != null){
-						//System.out.println("P: Ping "+li_IPs[i]+" "+li_ports[i]);
 						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
 						try{socket_p.send(packet);
 						}catch (Exception e) {e.printStackTrace();}	
@@ -724,14 +709,13 @@ public class Node {
 		public void update(int a, InetAddress b) {
 			li_ports[cur_ind] = a;
 			li_IPs[cur_ind] = b;
-			//System.out.println(li_ports[cur_ind]+" "+li_IPs[cur_ind]);
 			cur_ind += 1;
 		}
 	}
 	
-	//What the client sees
+	//What the user sees
   	private class Client extends Thread{
- 		//Request list same as the server except for create as this is for managing a specified account, also no disconnect for similar reasons
+ 		//The requests for both menus shown to the user
  		private static final String[] REQUEST_LIST = {"retreive","withdraw","deposit","close","exit"};
  		private static final String[] MENU_LIST = {"create","manage","disconnect"};
  		
@@ -740,15 +724,13 @@ public class Node {
  		}
  		
  		public void run() {
- 			/**Set everything up**/
  			Scanner myObj = new Scanner(System.in);
  	    	myObj.useDelimiter(System.lineSeparator());
 	 	    boolean b = false;
 	 		int money = 0;
 	 		String money_str = null;
  			
- 			/**NOW THE CLIENT CAN INTERACT WITH THE DATA**/
- 			/**The menu which the user sees after loading the program**/
+
 	 		boolean online = true;
  			while (online) {
  				String in = "";
@@ -857,7 +839,7 @@ public class Node {
  					  b = false;
  					  break;
  				}
- 				//If any changes were made in this menu they are updated here
+ 				//If any changes were made in the above menu they are updated here
  				number = 0;
  		    	if (change_index!=-1) {
  		    		int[] u = new int[3];
@@ -940,7 +922,7 @@ public class Node {
  	 	    		break;
  	 	    	  case 3:
  	 	 		 	
- 	 	 		 	//Here the user is asked to input there desired withdraw
+ 	 	 		 	//Here the user is asked to input there desired deposit
  	 	 			try {
 	 	 	 	    	System.out.print("How much would you like to deposit: ");
 	 	 			    money_str = myObj.next();
@@ -995,7 +977,6 @@ public class Node {
  	 	    		
  				number = 0;
  				//Any changes made in this menu is updated here on the network
- 				//System.out.println(change_index);
  		    	if (change_index!=-1) {
  		    		int[] u = new int[3];
  		    		synchronized(account_list) { u[0] = account_list[change_index];}
@@ -1010,7 +991,7 @@ public class Node {
 
  		    	
  				}
-				ping.interrupt();
+
  		}
  		
 
@@ -1089,7 +1070,6 @@ public class Node {
  					break;
  				}
  			}
- 			//1 indicates it is being used
  			change_index = ind;
  	 		account_index[ind] = ind;
  			System.out.println("Account number: " + ind);
