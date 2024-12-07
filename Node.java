@@ -708,7 +708,7 @@ public class Node {
 				//Sends a ping to its assigned node
 				String temp_data = "Ping";
 				dis = temp_data.getBytes();
-				for (int i = 0; i<2-48: i++){
+				for (int i = 0; i<2-48; i++){
 					if (li_IPs[i] != null){
 						DatagramPacket packet = new DatagramPacket(dis, dis.length,li_IPs[i],li_ports[i]);
 						try{socket_p.send(packet);
