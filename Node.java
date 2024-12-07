@@ -422,7 +422,7 @@ public class Node {
 						String temp = "New;"+message[1].trim()+";"+message[2].trim()+";"+message[3].trim()+";"+message[4].trim();
 						data_node = temp.getBytes();
 						for (int i =0;i<IP_list.length;i++) {
-							if (port_list[i] != -1) {
+							if (port_list[i] != -1 && port_list[i]!=port) {
 								DatagramPacket packet = new DatagramPacket(data_node, data_node.length,IP_list[i],port_list[i]);
 								socket_m.send(packet);
 								packet = null;
