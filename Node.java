@@ -515,6 +515,7 @@ public class Node {
 		
 
 		public void run() {
+			System.out.println("L: "+port_l+" "+ip_str);
 			boolean ping = true;
 			while (ping) {
 			listen = new byte[65500];
@@ -531,6 +532,7 @@ public class Node {
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
+			System.out.println("L: "+s);
 			listen = null;
 			}
 			}
