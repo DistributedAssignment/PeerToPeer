@@ -1010,61 +1010,10 @@ public class Node {
 
  		    	
  				}
+				ping.interrupt();
  		}
  		
- 		/*private static boolean accountManagement(String account) {
- 			Scanner myObj = new Scanner(System.in);
- 	    	myObj.useDelimiter(System.lineSeparator());
- 	    	int number = 0;
- 	    	String choice = "";
- 	    	System.out.println("Account "+account);
- 	    	System.out.println("Please press: ");
- 	    	for (int i=0; i<REQUEST_LIST.length; i++) {
- 	    		int n = i+1;
- 	    		System.out.println(n+": "+REQUEST_LIST[i]);
- 	    		
- 	    	}
- 			try {
- 		    	
- 		    	boolean input =false;
- 		    	while (!input) {
- 		    		try {
- 		    			System.out.print("Input: ");
- 		    			choice = myObj.next();
- 		    			input = true;
- 		    		} catch (Exception e) {
- 		    			input= false;
- 		    		}
- 		    	}
- 		    	choice.trim();
- 		    	number = Integer.parseInt(choice);
- 				}
- 				catch(Exception NumberFormatException) {
- 				  number = 0;
- 				}
- 	    	boolean b;
- 	    	switch(number) {
- 	    	  case 1:
- 	    		b = retrieveData(account);
- 	    		return b;
- 	    	  case 2:
- 	    		 withdraw(account);
- 	    		b = true;
- 	    	  case 3:
- 	    		deposit(account);
- 	    		b = true;
- 	    	  case 4:
- 	      		closeData(account);
- 	      		b = false;
- 	    	  case 5:
- 	    		  b = false;
- 	    	  default:
- 	    		  System.out.println("Invalid request");
- 	    		  b = false;
- 	    	} 	    	
- 	    	return b;
- 	    }
- 		*/
+
  		private static boolean retrieveData(String account)  {
  			try {if (account_index[Integer.parseInt(account.trim())]!= -1) {
  			System.out.println("--------------------------");
