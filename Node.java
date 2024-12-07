@@ -558,7 +558,7 @@ public class Node {
 				ping = false;
 			} else {
 				t.resetTimer();	
-				//System.out.println("L: "+s.trim());				
+				System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
@@ -618,7 +618,7 @@ public class Node {
 			}
 			double end_time = System.currentTimeMillis();
 			double time =(end_time - start_time)/1000;
-			//System.out.println(time);
+			System.out.println(time);
 			if (time >= wait) {	
 				
 				noot = false;
