@@ -529,11 +529,11 @@ public class Node {
 			if ((s.trim()).equals("End")) {
 				ping = false;
 			} else {
-				t.interrupt();					
+				t.interrupt();	
+				System.out.println("L: "+s.trim());				
 				try {t.interrupt();
 				} catch (Exception e)  {}
 			}
-			System.out.println("L: "+s.trim());
 			listen = null;
 			}
 			}
