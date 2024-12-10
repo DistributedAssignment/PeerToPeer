@@ -44,7 +44,7 @@ public class Node {
  	static String[] name_list = new String[2048];
  	static int[] index_list = new int[2048];
  	//The information about the node
- 	static int port = 1;
+ 	static int port = 8000;
  	static String ip_str = getLocalAddress();
  	static InetAddress ip;
  	static int data = 0;
