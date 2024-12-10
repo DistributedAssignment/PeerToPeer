@@ -19,7 +19,7 @@ import java.lang.ProcessBuilder;
 import java.io.FileReader;
 import java.util.Random;
 import java.util.concurrent.*;
-
+//The bat files commit and import are used by the program to manage the repository
 public class Node {	
 	//The data
 	static int[] account_list = new int[2048] ;
